@@ -1,0 +1,22 @@
+{
+"name":"testconfig",
+"host":"confighost",
+"port":8080,
+"priority":10,
+"weight":1111,
+"text":"default text config something",
+"ttl":12,
+"key":"P.localhost.defaultservice",
+"checks":[
+{"name":"chk1",
+"id":"men",
+"script":"/bin/check",
+"interval":10
+},
+{"name":"chk2",
+"id":"cpu",
+"http":"http://baidu.com",
+"interval":10
+}
+]
+}
