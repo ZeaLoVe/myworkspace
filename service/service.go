@@ -11,15 +11,15 @@ import (
 //use to update DNS data in etcd
 type Service struct {
 	//etcd machines
-	machines []string `json:machines,omitempty"`
-
-	Name     string `json:"name,omitempty"`
-	Host     string `json:"host,omitempty"`
-	Port     uint64 `json:"port,omitempty"`
-	Priority uint64 `json:"priority,omitempty"`
-	Weight   uint64 `json:"weight,omitempty"`
-	Text     string `json:"text,omitempty"`
-	Ttl      uint64 `json:"ttl,omitempty"`
+	machines []string `json:"etcd,machine,omitempty"`
+	Node     string   `json:"node,omitempty"`
+	Name     string   `json:"name,omitempty"`
+	Host     string   `json:"host,omitempty"`
+	Port     uint64   `json:"port,omitempty"`
+	Priority uint64   `json:"priority,omitempty"`
+	Weight   uint64   `json:"weight,omitempty"`
+	Text     string   `json:"text,omitempty"`
+	Ttl      uint64   `json:"ttl,omitempty"`
 	// etcd key where we found this service and ignore from json (un)marshalling
 	Key string `json:"key,omitempty"`
 
@@ -28,11 +28,26 @@ type Service struct {
 }
 
 func (s *Service) SetKey(key string) {
-	if key == "" && s.Key == "" {
-		s.Key = strconv.Itoa(int(s.Port)) + "." + s.Host + "." + s.Name
+	if s.Key != "" { //s.Key already set
+		return
+	}
+	if key == "" { //s.Key not set and given key is empty
+		s.Key = strconv.Itoa(int(s.Port)) + "." + s.Node + "." + s.Name
 		fmt.Printf("SetKEY:-------------------------: %v\n", s.Key)
-	} else {
+	} else { //s.Key not set and given key is not empty
 		s.Key = key
+	}
+}
+
+//for test
+func (s *Service) setHost(host string) {
+	if s.Host != "" {
+		return
+	}
+	if host == "" {
+		s.Host = "192.168.1.1" //here need be changed by function getCurrent IP
+	} else {
+		s.Host = host
 	}
 }
 
@@ -58,8 +73,8 @@ func (s *Service) SetDefault() {
 	if s.Name == "" {
 		s.Name = "defaultservice"
 	}
-	if s.Host == "" {
-		s.Host = "localhost"
+	if s.Node == "" {
+		s.Node = "localhost"
 	}
 	if s.Port == 0 {
 		s.Port = 80
@@ -77,10 +92,14 @@ func (s *Service) SetDefault() {
 		s.Text = "default text for record something"
 	}
 	s.SetKey("")
+	s.setHost("")
 }
 
 //for test
 func (s *Service) Dump() {
+	for _, str := range s.machines {
+		fmt.Printf("etcd Machines:%v\n", str)
+	}
 	fmt.Printf("key:%v\n", s.Key)
 	fmt.Printf("name:%v\n", s.Name)
 	fmt.Printf("host:%v\n", s.Host)

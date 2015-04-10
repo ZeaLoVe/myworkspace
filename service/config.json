@@ -1,12 +1,17 @@
 {
+"etcd":[{
+"machine":"http://192.168.181.16:2379",
+"machine":"http://192.168.181.16:4001"
+}],
 "name":"testconfig",
+"node":"n1",
 "host":"confighost",
 "port":8080,
 "priority":10,
 "weight":1111,
 "text":"default text config something",
 "ttl":12,
-"key":"P.localhost.defaultservice",
+"key":"80.localhost.defaultservice",
 "checks":[
 {"name":"chk1",
 "id":"men",
