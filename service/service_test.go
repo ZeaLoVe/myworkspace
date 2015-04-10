@@ -22,5 +22,8 @@ func TestParseJSON(t *testing.T) {
 }
 
 func TestLoadConfigFile(t *testing.T) {
-
+	var ser Service
+	ser.SetDefault()
+	ser.LoadConfigFile("config.json")
+	ser.Dump()
 }

@@ -11,6 +11,16 @@ func TestHealthCheckDump(t *testing.T) {
 	hc.Dump()
 }
 
+func TestHealthCheckParseJSON(t *testing.T) {
+	var hc HealthCheck
+	hc.SetDefault()
+	if res, err := hc.ParseJSON(); err == nil {
+		fmt.Println(string(res))
+	} else {
+		t.Fatalf("test healthCheck parseJSON fail")
+	}
+}
+
 func TestHealthCheck(t *testing.T) {
 	var hc HealthCheck
 	hc.SetDefault()

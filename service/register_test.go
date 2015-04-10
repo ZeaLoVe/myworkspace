@@ -16,10 +16,10 @@ func TestChangeMachine(t *testing.T) {
 	r.ChangeMachines(EmptyMachine)
 }
 
-func TestDeleteService(t *testing.T) {
-
-}
-
 func TestUpdateService(t *testing.T) {
-
+	var r Register
+	var ser Service
+	ser.SetDefault()
+	r.s = &ser
+	r.UpdateService()
 }
