@@ -26,8 +26,8 @@ func (r *Register) ChangeMachines(newMachine []string) {
 }
 
 func (r *Register) UpdateService() error {
-	r.s.SetKey("")
 
+	r.s.setHost("")
 	tmpList := strings.Split(r.s.Key, ".")
 	for i, j := 0, len(tmpList)-1; i < j; i, j = i+1, j-1 {
 		tmpList[i], tmpList[j] = tmpList[j], tmpList[i]
