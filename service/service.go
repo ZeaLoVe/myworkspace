@@ -5,13 +5,33 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"strconv"
+	"strings"
 )
+
+const ETCDMACHINES = "etcd.sdp"
+
+//get ip by name ,use for etcd machines discoury
+func getipByName(name string) []string {
+	ns, err := net.LookupIP(name)
+	if err != nil {
+		fmt.Printf("no ips for %v", name)
+		return nil
+	} else {
+		var ips []string
+		for _, ip := range ns {
+			ips = append(ips, ip.String())
+		}
+		return ips
+	}
+}
 
 //use to update DNS data in etcd
 type Service struct {
 	//etcd machines
-	machines []string `json:"etcd,machine,omitempty"`
+	machines []string `json:"-"`
+	Machines string   `json:"machines,omitempty"`
 	Node     string   `json:"node,omitempty"`
 	Name     string   `json:"name,omitempty"`
 	Host     string   `json:"host,omitempty"`
@@ -51,6 +71,24 @@ func (s *Service) setHost(host string) {
 	}
 }
 
+func (s *Service) setMachines(newMachine []string) {
+	if len(newMachine) == 0 {
+		if len(s.machines) != 0 {
+			return //already set
+		}
+		//fmt.Println("-----------len newmachine is 0")
+		if len(s.machines) == 0 && s.Machines != "" {
+			//fmt.Println("-----------s.machine is 0")
+			s.machines = strings.Split(s.Machines, ",")
+		} else {
+			s.machines = getipByName(ETCDMACHINES)
+		}
+	} else {
+		//fmt.Println("-----------len newmachine is not 0")
+		s.machines = newMachine
+	}
+}
+
 func (s *Service) ParseJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
@@ -67,9 +105,6 @@ func (s *Service) LoadConfigFile(filename string) {
 
 //for test
 func (s *Service) SetDefault() {
-	if len(s.machines) == 0 {
-		s.machines = []string{"http://192.168.181.16:2379"}
-	}
 	if s.Name == "" {
 		s.Name = "defaultservice"
 	}
@@ -93,13 +128,11 @@ func (s *Service) SetDefault() {
 	}
 	s.SetKey("")
 	s.setHost("")
+	s.setMachines(nil)
 }
 
 //for test
 func (s *Service) Dump() {
-	for _, str := range s.machines {
-		fmt.Printf("etcd Machines:%v\n", str)
-	}
 	fmt.Printf("key:%v\n", s.Key)
 	fmt.Printf("name:%v\n", s.Name)
 	fmt.Printf("host:%v\n", s.Host)

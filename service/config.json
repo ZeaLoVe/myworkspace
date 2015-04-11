@@ -1,8 +1,5 @@
 {
-"etcd":[{
-"machine":"http://192.168.181.16:2379",
-"machine":"http://192.168.181.16:4001"
-}],
+"machines":"http://192.168.181.16:2379,http://192.168.181.16:4001",
 "name":"testconfig",
 "node":"n1",
 "host":"confighost",
