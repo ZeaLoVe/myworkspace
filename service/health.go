@@ -3,6 +3,11 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os/exec"
+	"syscall"
+
+	"myworkspace/util"
 )
 
 //Result of health Check
@@ -34,10 +39,10 @@ func (hc *HealthCheck) SetDefault() {
 		hc.TTL = 10
 	}
 	if hc.Interval == 0 {
-		hc.Interval = 0
+		hc.Interval = 10
 	}
 	if hc.Notes == "" {
-		hc.Notes = "this is default health check."
+		hc.Notes = "Health check Notes not given."
 	}
 }
 
@@ -45,17 +50,46 @@ func (hc *HealthCheck) ParseJSON() ([]byte, error) {
 	return json.Marshal(hc)
 }
 
+func (hc *HealthCheck) TTLCheck() (int, error) {
+	return PASS, nil
+}
+
+func (hc *HealthCheck) ScriptCheck() (int, error) {
+	cmd, err := util.ExecScript(hc.Script)
+	if err != nil {
+		log.Printf("fail to setup invoke '%v' with err:'%v'", hc.Script, err.Error())
+		return FAIL, err
+	}
+	output, err := cmd.Output()
+	log.Printf("Script return:%v", string(output))
+	exitErr, ok := err.(*exec.ExitError)
+	if ok {
+		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+			code := status.ExitStatus()
+			if code == 1 {
+				log.Printf("check '%v' is warning ", hc.Script)
+				return WARN, err
+			}
+		}
+	}
+	return PASS, err
+}
+
+func (hc *HealthCheck) HttpCheck() (int, error) {
+	return PASS, nil
+}
+
 func (hc *HealthCheck) Check() (int, error) {
 	if hc.TTL != 0 { //TTL check
-		return PASS, nil
+		return hc.TTLCheck()
 	}
 	if hc.Script != "" && hc.Interval != 0 {
-		return PASS, nil
+		return hc.ScriptCheck()
 	}
 	if hc.HTTP != "" && hc.Interval != 0 {
-		return PASS, nil
+		return hc.HttpCheck()
 	}
-	return FAIL, nil
+	return PASS, nil
 }
 
 //for test ,dump value of health check.

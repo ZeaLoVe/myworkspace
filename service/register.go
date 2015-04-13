@@ -2,14 +2,11 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/coreos/go-etcd/etcd"
 	"log"
 	"path"
 	"strings"
 )
-
-const ttloffset = 0 //
 
 type Register struct {
 	s *Service
@@ -17,7 +14,7 @@ type Register struct {
 
 func (r *Register) ChangeMachines(newMachine []string) {
 	if len(newMachine) == 0 {
-		log.Println("No Machine address")
+		log.Println("No etcd Machine address given")
 		return
 	} else {
 		r.s.machines = newMachine
@@ -39,8 +36,8 @@ func (r *Register) UpdateService() error {
 		log.Printf("can't get value in UpdateService")
 		return err
 	}
-	fmt.Printf("insert key: %v\n", key)
-	fmt.Printf("insert value: %v\n", string(value))
+	log.Printf("#UPdateService#insert key: %v\n", key)
+	log.Printf("#UPdateService#insert value: %v\n", string(value))
 
 	if len(r.s.machines) == 0 {
 		log.Fatalf("No etcd machines")
@@ -48,7 +45,7 @@ func (r *Register) UpdateService() error {
 	}
 	client := etcd.NewClient(r.s.machines)
 
-	_, errSet := client.Set(key, string(value), (r.s.Ttl + ttloffset))
+	_, errSet := client.Set(key, string(value), r.s.Ttl)
 	if errSet != nil {
 		return err
 	} else {

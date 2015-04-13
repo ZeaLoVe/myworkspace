@@ -7,7 +7,9 @@ import (
 const Version = "0.1"
 
 type SDAgent struct {
-	jobs []Job
+	Ser []service `json:"services,omitempty"`
+
+	jobs []Job `json:"-"`
 }
 
 func (sda *SDAgent) Run() {
