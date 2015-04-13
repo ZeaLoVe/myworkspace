@@ -137,6 +137,22 @@ func (s *Service) LoadConfigFile(filename string) {
 	s.SetDefault()
 }
 
+func (s *Service) CheckAll() int {
+	res := PASS
+	for _, health := range s.Hc {
+		oneres, err := health.Check()
+		if err != nil {
+			return FAIL
+		} else {
+			if oneres == WARN || oneres == FAIL {
+				res = oneres
+				return res
+			}
+		}
+	}
+	return res
+}
+
 //for test
 func (s *Service) SetDefault() {
 	if s.Name == "" {

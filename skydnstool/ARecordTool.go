@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/coreos/go-etcd/etcd"
+	"io"
 	"net"
 	"os"
 	"path"
@@ -71,10 +72,18 @@ func setService(name string, ip string, ttl uint64) error {
 func main() {
 	machines = []string{"http://192.168.181.16:2379"} //set default
 	usage = `SKYDNSTOOL version 1.0
-	Usage:set name ip ttl
+	Usage:
+	set name ip ttl
 	forexample:set x1.mongo.sd.sdp 192.168.1.1 3600
 	get name
 	forexample:get x1.mongo.sd.sdp 
+	batch set by file
+	forexample:file RR.txt 
+	RR.txt--------------->
+	example.com 192.168.10.111 3600
+	test.sdp.cn 192.198.1.11 3600
+	x1.mongo.cn 192.198.1.13 3600
+	
 	other command has no results.
 	`
 	for {
@@ -109,7 +118,40 @@ func main() {
 				if result := getService(str[1]); result != "" {
 					fmt.Println(result)
 				}
+			case "file":
+				count := 0
+				file, err := os.Open(str[1])
+				if err != nil {
+					fmt.Println("open file error")
+				}
+				defer file.Close()
+				buf := bufio.NewReader(file)
+				for {
+					line, err := buf.ReadString('\n')
+					line = strings.Trim(line, "\r\n")
+					if err == io.EOF {
+						break
+					}
+					if err != nil && err != io.EOF {
+						fmt.Println("read buf error")
+						break
 
+					} else {
+						strs := strings.Split(line, " ")
+						if len(strs) != 3 {
+							fmt.Println("format error ,must be:key value ttl")
+							continue
+						}
+						ttl, err := strconv.Atoi(strs[2])
+						if err == nil {
+							err := setService(strs[0], strs[1], uint64(ttl))
+							if err == nil {
+								count = count + 1
+							}
+						}
+					}
+				}
+				fmt.Printf("%v lines of records set\n", count)
 			default:
 				fmt.Println(usage)
 			}

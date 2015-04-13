@@ -1,13 +1,13 @@
 package sdagent
 
 import (
-	"log"
+	. "myworkspace/service"
 )
 
 const Version = "0.1"
 
 type SDAgent struct {
-	Ser []service `json:"services,omitempty"`
+	Ser []Service `json:"services,omitempty"`
 
 	jobs []Job `json:"-"`
 }
@@ -16,11 +16,23 @@ func (sda *SDAgent) Run() {
 
 }
 
-func (sda *SDAgent) AddJob() {
+func (sda *SDAgent) LoadConfig() {
 
 }
 
-func (sda *SDAgent) DeleteJob() {
+func (sda *SDAgent) Start() {
+
+}
+
+func (sda *SDAgent) StopAll() {
+
+}
+
+func (sda *SDAgent) StopJob() {
+
+}
+
+func (sda *SDAgent) startJob() {
 
 }
 

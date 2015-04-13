@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -64,7 +65,12 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 		return FAIL, err
 	}
 	output, err := cmd.Output()
-	log.Printf("Script return:%v", string(output))
+	log.Printf("Script return: %v ", string(output))
+
+	//if err := cmd.Start(); err != nil {
+	//	log.Printf("fail to invoke '%v' with err:'%v'\n", hc.Script, err.Error())
+	//	return FAIL, err
+	//}
 	exitErr, ok := err.(*exec.ExitError)
 	if ok {
 		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
@@ -91,13 +97,12 @@ func (hc *HealthCheck) HttpCheck() (int, error) {
 	}
 	log.Printf("http request:'%v' get status: '%v' with body:'%s'\n", hc.HTTP, resp.Status, body)
 	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
-		//log.Printf("check pass")
 		return PASS, nil
 	} else if resp.StatusCode == 429 {
-		return WARN, nil
+		return WARN, errors.New("Too many querys")
 	} else {
 		log.Printf("http check critical by check return status code")
-		return FAIL, nil
+		return FAIL, errors.New("Http check not pass")
 	}
 	return PASS, nil
 }

@@ -1,10 +1,16 @@
 package sdagent
 
-import ()
+import (
+	"fmt"
+	"log"
+	. "myworkspace/service"
+	"time"
+)
 
 type JobConfig struct {
-	UpdateInterval uint64
-	CheckInterval  uint64
+	LastCheckStatus int
+	UpdateInterval  time.Duration
+	JobID           string //come from Service.key ,what is unique
 }
 
 type Job struct {
@@ -15,6 +21,26 @@ type Job struct {
 	config        JobConfig
 }
 
-func (j *Job) Run() {
+func (j *Job) SetConfig() {
+	if j.s != nil {
+		j.config.JobID = j.s.Key
+		j.config.UpdateInterval = time.Duration(j.s.Ttl/2) * time.Second //update time must smaller than TTL
+	}
+}
 
+func (j *Job) Run() {
+	j.config.LastCheckStatus = PASS
+	internal := time.After(j.config.UpdateInterval)
+	log.Printf("Job run interval:%v\n", j.config.UpdateInterval)
+	for {
+		select {
+		case <-internal:
+			if j.config.LastCheckStatus == PASS {
+				fmt.Println("job update")
+				j.r.UpdateService()
+			}
+		case <-j.stopChan:
+			fmt.Println("job stop")
+		}
+	}
 }
