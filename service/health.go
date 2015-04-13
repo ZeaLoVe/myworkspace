@@ -3,7 +3,9 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os/exec"
 	"syscall"
 
@@ -54,10 +56,11 @@ func (hc *HealthCheck) TTLCheck() (int, error) {
 	return PASS, nil
 }
 
+// timeout must be set
 func (hc *HealthCheck) ScriptCheck() (int, error) {
 	cmd, err := util.ExecScript(hc.Script)
 	if err != nil {
-		log.Printf("fail to setup invoke '%v' with err:'%v'", hc.Script, err.Error())
+		log.Printf("fail to setup invoke '%v' with err:'%v'\n", hc.Script, err.Error())
 		return FAIL, err
 	}
 	output, err := cmd.Output()
@@ -67,7 +70,7 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
 			code := status.ExitStatus()
 			if code == 1 {
-				log.Printf("check '%v' is warning ", hc.Script)
+				log.Printf("check '%v' is warning \n", hc.Script)
 				return WARN, err
 			}
 		}
@@ -76,6 +79,26 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 }
 
 func (hc *HealthCheck) HttpCheck() (int, error) {
+	resp, err := http.Get(hc.HTTP)
+	if err != nil {
+		log.Printf("http request failed '%v':'%v'\n", hc.HTTP, err)
+		return FAIL, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Get '%v' error while reading body \n", err)
+	}
+	log.Printf("http request:'%v' get status: '%v' with body:'%s'\n", hc.HTTP, resp.Status, body)
+	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
+		//log.Printf("check pass")
+		return PASS, nil
+	} else if resp.StatusCode == 429 {
+		return WARN, nil
+	} else {
+		log.Printf("http check critical by check return status code")
+		return FAIL, nil
+	}
 	return PASS, nil
 }
 

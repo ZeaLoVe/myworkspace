@@ -14,6 +14,7 @@ import (
 	"myworkspace/util"
 )
 
+const ETCDPORT = "2379"
 const ETCDMACHINES = "etcd.sdp"
 
 //get ip by name ,use for etcd machines discoury
@@ -29,6 +30,15 @@ func getipByName(name string) []string {
 		}
 		return ips
 	}
+}
+
+type ServiceParser struct {
+	Host     string `json:"host,omitempty"`
+	Port     uint64 `json:"port,omitempty"`
+	Priority uint64 `json:"priority,omitempty"`
+	Weight   uint64 `json:"weight,omitempty"`
+	Text     string `json:"text,omitempty"`
+	Ttl      uint64 `json:"ttl,omitempty"`
 }
 
 //use to update DNS data in etcd
@@ -90,21 +100,30 @@ func (s *Service) setMachines(newMachine []string) {
 		if len(s.machines) != 0 {
 			return //already set
 		}
-		//fmt.Println("-----------len newmachine is 0")
 		if len(s.machines) == 0 && s.Machines != "" {
-			//fmt.Println("-----------s.machine is 0")
 			s.machines = strings.Split(s.Machines, ",")
 		} else {
-			s.machines = getipByName(ETCDMACHINES)
+			var tmpMachines []string
+			tmpMachines = getipByName(ETCDMACHINES)
+			for i, machine := range tmpMachines {
+				tmpMachines[i] = "http://" + machine + ":" + ETCDPORT
+			}
+			s.machines = tmpMachines
 		}
 	} else {
-		//fmt.Println("-----------len newmachine is not 0")
 		s.machines = newMachine
 	}
 }
 
 func (s *Service) ParseJSON() ([]byte, error) {
-	return json.Marshal(s)
+	var parser ServiceParser
+	parser.Host = s.Host
+	parser.Port = s.Port
+	parser.Priority = s.Priority
+	parser.Weight = s.Weight
+	parser.Text = s.Text
+	parser.Ttl = s.Ttl
+	return json.Marshal(parser)
 }
 
 func (s *Service) LoadConfigFile(filename string) {

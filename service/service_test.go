@@ -48,3 +48,9 @@ func TestLoadConfigFile(t *testing.T) {
 	ser.LoadConfigFile("config.json")
 	ser.Dump()
 }
+
+func TestSetMachines(t *testing.T) {
+	var ser Service
+	ser.setMachines(nil)
+	ser.Dump()
+}
