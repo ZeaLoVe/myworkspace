@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"net"
 )
 
@@ -14,7 +15,7 @@ const ETCDMACHINES = "etcd.sdp"
 func GetIPByName(name string) []string {
 	ns, err := net.LookupIP(name)
 	if err != nil {
-		fmt.Printf("no ips for %v\n", name)
+		log.Printf("[DEBUG]Can't get ips for %v\n", name)
 		return nil
 	} else {
 		var ips []string

@@ -31,12 +31,13 @@ func TestJobState(t *testing.T) {
 func TestJobSetConfig(t *testing.T) {
 	var ser Service
 	var job Job
+	ser.SetDefault()
+	ser.InitService()
 	job.S = ser
 	job.SetConfig()
 	if job.config.JOBSTATE != PREPARE {
 		log.Printf("job serconfig error test fail")
 	}
-	job.S.SetDefault()
 	job.SetConfig()
 	if job.config.JOBSTATE != READY {
 		log.Printf("job serconfig fail")
@@ -44,6 +45,7 @@ func TestJobSetConfig(t *testing.T) {
 	if job.config.UpdateInterval != time.Duration(job.S.Ttl/2)*time.Second {
 		t.Fatalf("job Test SetConfig UpdateInterval fail")
 	}
+	log.Printf("%v ----- %v", job.config.JobID, job.S.Key)
 	if job.config.JobID != job.S.Key {
 		t.Fatalf("job Test SetConfig JobID fail")
 	}
@@ -53,6 +55,8 @@ func TestJobRun(t *testing.T) {
 	testjob := Job{}
 	var ser Service
 	ser.SetDefault()
+	ser.InitService()
+	//ser.Dump()
 	testjob.S = ser
 	testjob.SetConfig()
 	go testjob.Run()

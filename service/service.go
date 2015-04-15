@@ -16,18 +16,17 @@ import (
 )
 
 type ServiceParser struct {
-	Host     string `json:"host,omitempty"`
+	Host     string `json:"host,omitempty"` //need for DNS records
 	Port     uint64 `json:"port,omitempty"`
 	Priority uint64 `json:"priority,omitempty"`
 	Weight   uint64 `json:"weight,omitempty"`
 	Text     string `json:"text,omitempty"`
-	Ttl      uint64 `json:"ttl,omitempty"`
+	Ttl      uint64 `json:"ttl,omitempty"` //need for DNS records ttl
 }
 
 //use to update DNS data in etcd
 type Service struct {
 	//etcd machines
-
 	Machines string `json:"machines,omitempty"`
 	Node     string `json:"node,omitempty"`
 	Name     string `json:"name,omitempty"`
@@ -38,7 +37,7 @@ type Service struct {
 	Text     string `json:"text,omitempty"`
 	Ttl      uint64 `json:"ttl,omitempty"`
 	Key      string `json:"key,omitempty"`
-	//use to do healthcheck
+
 	Hc []HealthCheck `json:"checks"`
 
 	machines []string `json:"-"`
@@ -59,7 +58,7 @@ func (s *Service) SetKey(key string) {
 			s.Key = s.Node + "." + s.Name
 		} else { //if node not set ,given a randan node name
 			r := rand.New(rand.NewSource(time.Now().UnixNano()))
-			s.Node = "s" + strconv.Itoa(r.Intn(10000))
+			s.Node = "s" + strconv.Itoa(r.Intn(100000))
 			s.Key = s.Node + "." + s.Name
 		}
 	} else { //s.Key not set and given key is not empty
@@ -72,11 +71,11 @@ func (s *Service) setHost(host string) {
 		return
 	}
 	if host == "" {
-		pip, err := GetPrivateIP()
+		ip, err := GetPrivateIP()
 		if err != nil {
-			log.Fatal("Get PrivateIP error")
+			log.Printf("[EER]Service of host not set and can't get private IP.\n")
 		} else {
-			s.Host = pip.String()
+			s.Host = ip.String()
 		}
 
 	} else {
@@ -89,7 +88,7 @@ func (s *Service) setMachines(newMachine []string) {
 		if len(s.machines) != 0 {
 			return //already set
 		}
-		if len(s.machines) == 0 && s.Machines != "" {
+		if len(s.machines) == 0 && s.Machines != "" { //split etcd machines by ,
 			s.machines = strings.Split(s.Machines, ",")
 		} else {
 			tmpMachines := GetIPByName(ETCDMACHINES)
@@ -114,6 +113,7 @@ func (s *Service) ParseJSON() ([]byte, error) {
 	return json.Marshal(parser)
 }
 
+//this func no use in agent,just for test
 func (s *Service) LoadConfigFile(filename string) {
 	config, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -122,10 +122,9 @@ func (s *Service) LoadConfigFile(filename string) {
 	if err := json.Unmarshal(config, s); err != nil {
 		log.Fatal("Unmarsh to service struct fail,can't get infomation of service")
 	}
-	s.SetDefault()
 }
 
-//it can't run if Key,ttl,machines not set
+//Service can't run job if Key,ttl,machines not set
 func (s *Service) CanRun() bool {
 	if s.Key == "" || s.Ttl == 0 || len(s.machines) == 0 {
 		return false
@@ -136,7 +135,7 @@ func (s *Service) CanRun() bool {
 
 func (s *Service) CheckAll() int {
 	if len(s.Hc) == 0 {
-		log.Printf("No health check in service: %v, ignore health check.\n", s.Name)
+		log.Printf("[ERR]No health check in service: %v, ignore health check.\n", s.Key)
 		return PASS
 	}
 	res := PASS
@@ -145,18 +144,20 @@ func (s *Service) CheckAll() int {
 		if err != nil {
 			return FAIL
 		} else {
-			if oneres == WARN || oneres == FAIL {
-				res = oneres
-				return res
+			if oneres == FAIL {
+				return FAIL
+			}
+			if oneres == WARN {
+				res = WARN
 			}
 		}
 	}
 	return res
 }
 
+// call InitService before call this
 func (s *Service) UpdateService() error {
 
-	s.setHost("")
 	tmpList := strings.Split(s.Key, ".")
 	for i, j := 0, len(tmpList)-1; i < j; i, j = i+1, j-1 {
 		tmpList[i], tmpList[j] = tmpList[j], tmpList[i]
@@ -165,27 +166,33 @@ func (s *Service) UpdateService() error {
 	key := path.Join(append([]string{"/skydns/"}, tmpList...)...)
 	value, err := s.ParseJSON()
 	if err != nil {
-		log.Printf("can't get value in UpdateService")
+		log.Printf("[WARM]Can't get value in function UpdateService.\n")
 		return err
 	}
-	log.Printf("#UPdateService#insert key: %v\n", key)
-	log.Printf("#UPdateService#insert value: %v\n", string(value))
+	log.Printf("[DEBUG]UPdateService key: %v.\n", key)
+	log.Printf("[DEBUG]UPdateService value: %v.\n", string(value))
 
 	if len(s.machines) == 0 {
-		log.Fatalf("No etcd machines")
+		log.Printf("[ERR]Service:%v No etcd machines.\n", s.Key)
 		return errors.New("No etcd machines")
 	}
 	client := etcd.NewClient(s.machines)
 
 	_, errSet := client.Set(key, string(value), s.Ttl)
 	if errSet != nil {
-		return err
+		return errSet
 	} else {
 		return nil
 	}
 }
 
-//for test
+func (s *Service) InitService() {
+	s.SetKey("")
+	s.setHost("")
+	s.setMachines(nil)
+}
+
+//for init service
 func (s *Service) SetDefault() {
 	if s.Name == "" {
 		s.Name = "defaultservice"
@@ -205,9 +212,6 @@ func (s *Service) SetDefault() {
 	if s.Text == "" {
 		s.Text = "default text for record something"
 	}
-	s.SetKey("")
-	s.setHost("")
-	s.setMachines(nil)
 }
 
 //for test

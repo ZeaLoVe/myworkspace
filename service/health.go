@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os/exec"
+	"strconv"
 	"syscall"
+	"time"
 
 	"myworkspace/util"
 )
@@ -25,10 +28,10 @@ type HealthCheck struct {
 	CheckID   string `json:"id,omitempty"`
 	TTL       uint64 `json:"ttl,omitempty"`
 	Script    string `json:"script,omitempty"`
-	HTTP      string `json:"http,omitempty"`
-	Interval  uint64 `json:"interval,omitempty"`
-	Timeout   uint64 `json:"timeout,omitempty"`
-	Notes     string `json:"notes,omitempty"`
+	HTTP      string `json:"http,omitempty"`     //just for health check type ,value has no meanning
+	Interval  uint64 `json:"interval,omitempty"` //no use now,keep it
+	Timeout   uint64 `json:"timeout,omitempty"`  //no use now,keep it
+	Notes     string `json:"notes,omitempty"`    //no use now,keep it
 }
 
 func NewHealthCheck() *HealthCheck {
@@ -39,13 +42,14 @@ func NewHealthCheck() *HealthCheck {
 
 func (hc *HealthCheck) SetDefault() {
 	if hc.CheckName == "" {
-		hc.CheckName = "defaultcheck"
+		hc.CheckName = "chk_name"
 	}
 	if hc.CheckID == "" {
-		hc.CheckID = "defaultid"
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		hc.CheckID = "chk_id" + strconv.Itoa(r.Intn(100000))
 	}
-	if hc.TTL == 0 {
-		hc.TTL = 10
+	if hc.Timeout == 0 {
+		hc.Timeout = 10
 	}
 	if hc.Interval == 0 {
 		hc.Interval = 10
@@ -67,28 +71,33 @@ func (hc *HealthCheck) TTLCheck() (int, error) {
 func (hc *HealthCheck) ScriptCheck() (int, error) {
 	cmd, err := util.ExecScript(hc.Script)
 	if err != nil {
-		log.Printf("fail to setup invoke '%v' with err:'%v'\n", hc.Script, err.Error())
+		log.Printf("[WARM]Fail to setup invoke '%v' with err:'%v'.\n", hc.Script, err.Error())
 		return FAIL, err
 	}
 	//output, err := cmd.Output()
 	//log.Printf("Script return: %v ", string(output))
 
 	if err := cmd.Start(); err != nil {
-		log.Printf("fail to invoke '%v' with err:'%v'\n", hc.Script, err.Error())
+		log.Printf("[WARM]Fail to invoke '%v' with err:'%v'.\n", hc.Script, err.Error())
 		return FAIL, err
+	}
+	err = cmd.Wait() // get cmd return value
+	if err == nil {
+		return PASS, nil
 	}
 	exitErr, ok := err.(*exec.ExitError)
 	if ok {
 		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
 			code := status.ExitStatus()
+			log.Printf("[DEBUG]Script Check:'%v' return: %v .\n", hc.Script, code)
 			if code == 0 {
-				log.Printf("check '%v' is passing \n", hc.Script)
+				log.Printf("[DEBUG]Script Check:'%v' is passing.\n", hc.Script)
 				return PASS, nil
 			} else if code == 1 {
-				log.Printf("check '%v' is warning \n", hc.Script)
+				log.Printf("[DEBUG]Script Check:'%v' is warning.\n", hc.Script)
 				return WARN, err
 			} else {
-				log.Printf("check '%v' is failing \n", hc.Script)
+				log.Printf("[DEBUG]Script Check:'%v' is failing.\n", hc.Script)
 				return FAIL, err
 			}
 		}
@@ -99,30 +108,30 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 func (hc *HealthCheck) HttpCheck() (int, error) {
 	resp, err := http.Get(hc.HTTP)
 	if err != nil {
-		log.Printf("http request failed '%v':'%v'\n", hc.HTTP, err)
+		log.Printf("[WARN]Http request:'%v' failed. error:'%v'.\n", hc.HTTP, err)
 		return FAIL, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Get '%v' error while reading body \n", err)
+		log.Printf("[WARN]Get '%v' error while reading http body:'%v'.\n", err, body)
 	}
-	log.Printf("http request:'%v' get status: '%v' with body:'%s'\n", hc.HTTP, resp.Status, body)
+	//log.Printf("http request:'%v' get status: '%v' with body:'%s'\n", hc.HTTP, resp.Status, body)
 	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
 		return PASS, nil
 	} else if resp.StatusCode == 429 {
 		return WARN, errors.New("Too many querys")
 	} else {
-		log.Printf("http check critical by check return status code")
 		return FAIL, errors.New("Http check not pass")
 	}
 	return PASS, nil
 }
 
 func (hc *HealthCheck) Check() (int, error) {
+	//return success while not set,but warm will be logged
 	if hc.TTL == 0 && hc.Script == "" && hc.HTTP == "" {
-		log.Fatalln("miss health check config")
-		return FAIL, errors.New("miss health check config")
+		log.Printf("[WARM]Health check config miss.\n")
+		return PASS, errors.New("miss health check config")
 	}
 	if hc.TTL != 0 { //TTL check
 		return hc.TTLCheck()

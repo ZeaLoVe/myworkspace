@@ -50,24 +50,27 @@ func TestParseJSON(t *testing.T) {
 func TestLoadConfigFile(t *testing.T) {
 	var ser Service
 	ser.LoadConfigFile("config.json")
-	ser.Dump()
+	//ser.Dump()
 }
 
 func TestSetMachines(t *testing.T) {
 	var ser Service
+	ser.Dump()
 	ser.setMachines(nil)
-	//ser.Dump()
+	//ser.UpdateService()
 }
 
 func TestUpdateService(t *testing.T) {
 	var ser Service
-	//ser.LoadConfigFile("config.json")
+	ser.LoadConfigFile("config.json")
 	ser.SetDefault()
-	ser.machines = []string{"http://192.168.181.16:2379"}
+	ser.InitService()
 	err := ser.UpdateService()
+	//ser.Dump()
 	if err != nil {
 		t.Fatal("update service error")
 	} else {
 		log.Printf("update service pass")
 	}
+	t.Fatal("just for see log")
 }

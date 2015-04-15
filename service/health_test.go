@@ -9,13 +9,13 @@ func TestHealthCheckDump(t *testing.T) {
 	var hc HealthCheck
 	hc.SetDefault()
 	passtest := true
-	if hc.CheckName != "defaultcheck" {
+	if hc.CheckName == "" {
 		passtest = false
 	}
-	if hc.CheckID != "defaultid" {
+	if hc.CheckID == "" {
 		passtest = false
 	}
-	if hc.TTL != 10 {
+	if hc.Timeout != 10 {
 		passtest = false
 	}
 	if hc.Interval != 10 {
@@ -32,37 +32,22 @@ func TestHealthCheckDump(t *testing.T) {
 }
 
 func TestHealthCheckParseJSON(t *testing.T) {
-	var hc HealthCheck
-	hc.SetDefault()
+	hc := NewHealthCheck()
 	if res, err := hc.ParseJSON(); err == nil {
-		t.Log(string(res))
+		//t.Log(string(res))
 		log.Println("test healthCheck parseJSON success")
 	} else {
-		t.Fatalf("test healthCheck parseJSON fail")
+		t.Fatalf("test healthCheck parseJSON fail got '%v'\n", res)
 	}
 }
 
 func TestHealthCheck(t *testing.T) {
-	var hc HealthCheck
-	hc.SetDefault()
+	hc := NewHealthCheck()
 	if res, err := hc.Check(); err != nil {
-		t.Fatalf(err.Error())
+		log.Println(err.Error())
 	} else {
 		if res != PASS {
 			t.Fatalf("default health check fail")
-		} else {
-			log.Println("Script health check pass")
-		}
-	}
-
-	hc.TTL = 0
-	hc.Script = "dir"
-	hc.Interval = 10
-	if res, err := hc.Check(); err != nil {
-		t.Fatalf(err.Error())
-	} else {
-		if res != PASS {
-			t.Fatalf("Script health check fail")
 		} else {
 			log.Println("Script health check pass")
 		}
@@ -79,6 +64,19 @@ func TestHealthCheck(t *testing.T) {
 			t.Fatalf("HTTP health check fail")
 		} else {
 			log.Println("HTTP health check pass")
+		}
+	}
+
+	hc.TTL = 0
+	hc.Script = "ipconfig/all"
+	hc.Interval = 10
+	if res, err := hc.Check(); err != nil {
+		t.Fatalf(err.Error())
+	} else {
+		if res != PASS {
+			t.Fatalf("Script health check fail")
+		} else {
+			log.Println("Script health check pass")
 		}
 	}
 

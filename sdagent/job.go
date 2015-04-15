@@ -8,6 +8,7 @@ import (
 )
 
 const KEEPALIVENUM = 34
+const STOPCHANNUM = 10
 
 const (
 	PREPARE = iota
@@ -16,8 +17,8 @@ const (
 )
 
 type JobConfig struct {
-	JOBSTATE        int
-	LastCheckStatus int
+	JOBSTATE        int //Runtime state of job: PREPARE->READY->RUNNING->PREPARE
+	LastCheckStatus int //keep for multithread healthcheck
 	UpdateInterval  time.Duration
 	JobID           string //come from Service.key ,what is unique
 }
@@ -47,12 +48,12 @@ func (j *Job) SetConfig() error {
 		j.config.JobID = j.S.Key
 		j.config.UpdateInterval = time.Duration(j.S.Ttl/2) * time.Second //update time must smaller than TTL
 	} else {
-		log.Println("Not enough infomation for job setconfig")
-		return errors.New("Not enough infomation for job setconfig")
+		log.Println("[WARM]No enough infomation for job SetConfig")
+		return errors.New("No enough infomation for job setconfig")
 	}
 	j.stopChan = make(chan uint64)
 	j.keepAliveChan = make(chan uint64, 10)
-	j.SetJobState(READY)
+	j.SetJobState(READY) //PREPARE->READY , can run
 	return nil
 }
 
@@ -64,38 +65,42 @@ func (j *Job) jobStop() {
 
 func (j *Job) Run() {
 	if j.config.JOBSTATE != READY {
-		log.Printf("jobID:%v state is not READY, run job fail.\n", j.config.JobID)
+		log.Printf("[WARM]jobID:%v state is not READY, run job fail.\n", j.config.JobID)
 		return
 	}
 	j.SetJobState(RUNNING)
 	defer j.jobStop()
 	internal := time.Tick(j.config.UpdateInterval)
 	heartbeat := time.Tick(j.config.UpdateInterval / 2)
-	log.Printf("JobID: %v run interval:%v\n", j.config.JobID, j.config.UpdateInterval)
+	log.Printf("[DEBUG]JobID: %v run interval:%v\n", j.config.JobID, j.config.UpdateInterval)
 	for {
 		select {
 		case <-internal: //do update and check
 			res := j.S.CheckAll()
 			if res == PASS {
-				log.Printf("jobID:%v update service Success", j.config.JobID)
+				log.Printf("[DEBUG]jobID:%v update service Success", j.config.JobID)
 				if err := j.S.UpdateService(); err != nil {
-					log.Printf("jobID:%v do updateservice fail", j.config.JobID)
+					if err.Error() == "No etcd machines" {
+						log.Printf("[ERR]jobID:%v No etcd machines.\n", j.config.JobID)
+						time.Sleep(time.Second * 1)
+					}
+					log.Printf("[WARM]jobID:%v do updateservice fail", j.config.JobID)
 				} else {
-					log.Printf("jobID:%v do updateservice success", j.config.JobID)
+					log.Printf("[DEBUG]jobID:%v do updateservice success", j.config.JobID)
 				}
 			} else if res == WARN {
-				log.Printf("jobID:%v do health check Warn", j.config.JobID)
+				log.Printf("[WARM]jobID:%v do health check Warn", j.config.JobID)
 			} else if res == FAIL {
-				log.Printf("jobID:%v do health check Fail", j.config.JobID)
+				log.Printf("[WARM]jobID:%v do health check Fail", j.config.JobID)
 			} else {
 				//nothing
 			}
 		case <-j.stopChan:
-			log.Printf("jobID:%v stop", j.config.JobID)
+			log.Printf("[DEBUG]jobID:%v stop.\n", j.config.JobID)
 			return
 		case <-heartbeat:
 			j.keepAliveChan <- KEEPALIVENUM //no meanning
-			log.Printf("jobID:%v heartbeat!", j.config.JobID)
+			log.Printf("[DEBUG]jobID:%v heartbeat recieve!", j.config.JobID)
 		}
 	}
 }

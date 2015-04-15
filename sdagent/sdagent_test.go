@@ -23,7 +23,7 @@ func TestAgentLoadConfig(t *testing.T) {
 func TestStart(t *testing.T) {
 	fmt.Println("test Agent Start ")
 	Agent.Start()
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 	Agent.StopAll()
 	if Agent.Jobs[0].config.JOBSTATE != PREPARE {
 		log.Printf("Stop ALL dont change jobstate")
@@ -35,7 +35,6 @@ func TestStart(t *testing.T) {
 
 func TestRunAndStop(t *testing.T) {
 	fmt.Println("test RunAndStop start ")
-	Agent.StopAll()
 	Agent.StartJob(&Agent.Jobs[0])
 	time.Sleep(5 * time.Second)
 	Agent.StopJob(&Agent.Jobs[0])
@@ -52,9 +51,9 @@ func TestRunAndStop(t *testing.T) {
 func TestAgentRun(t *testing.T) {
 	Agent.Start()
 	Agent.Run()
-	time.Sleep(20 * time.Second)
+	time.Sleep(10 * time.Second)
 	Agent.StopJob(&Agent.Jobs[0])
 	time.Sleep(5 * time.Second)
 	Agent.StopJob(&Agent.Jobs[1])
-	time.Sleep(40 * time.Second)
+	time.Sleep(10 * time.Second)
 }
