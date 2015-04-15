@@ -1,35 +1,64 @@
 package sdagent
 
 import (
+	"log"
 	. "myworkspace/service"
 	"testing"
 	"time"
 )
 
+func TestJobState(t *testing.T) {
+	j := new(Job)
+	if j.config.JOBSTATE == PREPARE {
+		log.Printf("Job State init right")
+	} else {
+		log.Printf("Job State init error")
+	}
+	j.SetJobState(RUNNING)
+	if j.config.JOBSTATE == RUNNING {
+		log.Printf("Job State Set RUNNING right")
+	} else {
+		log.Printf("Job State Set RUNNING error")
+	}
+	j.SetJobState(PREPARE)
+	if j.config.JOBSTATE == PREPARE {
+		log.Printf("Job State Set PREPARE right")
+	} else {
+		log.Printf("Job State Set PREPARE error")
+	}
+}
+
 func TestJobSetConfig(t *testing.T) {
 	var ser Service
-	ser.SetDefault()
 	var job Job
-	job.s = &ser
+	job.S = ser
 	job.SetConfig()
-	if job.config.UpdateInterval != time.Duration(job.s.Ttl/2)*time.Second {
+	if job.config.JOBSTATE != PREPARE {
+		log.Printf("job serconfig error test fail")
+	}
+	job.S.SetDefault()
+	job.SetConfig()
+	if job.config.JOBSTATE != READY {
+		log.Printf("job serconfig fail")
+	}
+	if job.config.UpdateInterval != time.Duration(job.S.Ttl/2)*time.Second {
 		t.Fatalf("job Test SetConfig UpdateInterval fail")
 	}
-	if job.config.JobID != job.s.Key {
+	if job.config.JobID != job.S.Key {
 		t.Fatalf("job Test SetConfig JobID fail")
 	}
 }
 
 func TestJobRun(t *testing.T) {
-	testjob := new(Job)
-	ser := new(Service)
+	testjob := Job{}
+	var ser Service
 	ser.SetDefault()
-	testjob.s = ser
+	testjob.S = ser
 	testjob.SetConfig()
 	go testjob.Run()
 
-	time.Sleep(30 * time.Second)
+	time.Sleep(15 * time.Second)
 	testjob.stopChan <- 10
-	time.Sleep(10 * time.Second)
-
+	time.Sleep(1 * time.Second)
+	log.Println("TestJobRun stop")
 }

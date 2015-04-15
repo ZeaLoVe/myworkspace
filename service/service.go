@@ -2,35 +2,18 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/coreos/go-etcd/etcd"
 	"io/ioutil"
 	"log"
 	"math/rand"
-	"net"
+	. "myworkspace/util"
+	"path"
 	"strconv"
 	"strings"
 	"time"
-
-	"myworkspace/util"
 )
-
-const ETCDPORT = "2379"
-const ETCDMACHINES = "etcd.sdp"
-
-//get ip by name ,use for etcd machines discoury
-func getipByName(name string) []string {
-	ns, err := net.LookupIP(name)
-	if err != nil {
-		fmt.Printf("no ips for %v", name)
-		return nil
-	} else {
-		var ips []string
-		for _, ip := range ns {
-			ips = append(ips, ip.String())
-		}
-		return ips
-	}
-}
 
 type ServiceParser struct {
 	Host     string `json:"host,omitempty"`
@@ -61,6 +44,12 @@ type Service struct {
 	machines []string `json:"-"`
 }
 
+func NewService() *Service {
+	ser := new(Service)
+	ser.SetDefault()
+	return ser
+}
+
 func (s *Service) SetKey(key string) {
 	if s.Key != "" { //s.Key already set
 		return
@@ -83,7 +72,7 @@ func (s *Service) setHost(host string) {
 		return
 	}
 	if host == "" {
-		pip, err := util.GetPrivateIP()
+		pip, err := GetPrivateIP()
 		if err != nil {
 			log.Fatal("Get PrivateIP error")
 		} else {
@@ -103,8 +92,7 @@ func (s *Service) setMachines(newMachine []string) {
 		if len(s.machines) == 0 && s.Machines != "" {
 			s.machines = strings.Split(s.Machines, ",")
 		} else {
-			var tmpMachines []string
-			tmpMachines = getipByName(ETCDMACHINES)
+			tmpMachines := GetIPByName(ETCDMACHINES)
 			for i, machine := range tmpMachines {
 				tmpMachines[i] = "http://" + machine + ":" + ETCDPORT
 			}
@@ -137,7 +125,20 @@ func (s *Service) LoadConfigFile(filename string) {
 	s.SetDefault()
 }
 
+//it can't run if Key,ttl,machines not set
+func (s *Service) CanRun() bool {
+	if s.Key == "" || s.Ttl == 0 || len(s.machines) == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
 func (s *Service) CheckAll() int {
+	if len(s.Hc) == 0 {
+		log.Printf("No health check in service: %v, ignore health check.\n", s.Name)
+		return PASS
+	}
 	res := PASS
 	for _, health := range s.Hc {
 		oneres, err := health.Check()
@@ -151,6 +152,37 @@ func (s *Service) CheckAll() int {
 		}
 	}
 	return res
+}
+
+func (s *Service) UpdateService() error {
+
+	s.setHost("")
+	tmpList := strings.Split(s.Key, ".")
+	for i, j := 0, len(tmpList)-1; i < j; i, j = i+1, j-1 {
+		tmpList[i], tmpList[j] = tmpList[j], tmpList[i]
+	}
+
+	key := path.Join(append([]string{"/skydns/"}, tmpList...)...)
+	value, err := s.ParseJSON()
+	if err != nil {
+		log.Printf("can't get value in UpdateService")
+		return err
+	}
+	log.Printf("#UPdateService#insert key: %v\n", key)
+	log.Printf("#UPdateService#insert value: %v\n", string(value))
+
+	if len(s.machines) == 0 {
+		log.Fatalf("No etcd machines")
+		return errors.New("No etcd machines")
+	}
+	client := etcd.NewClient(s.machines)
+
+	_, errSet := client.Set(key, string(value), s.Ttl)
+	if errSet != nil {
+		return err
+	} else {
+		return nil
+	}
 }
 
 //for test

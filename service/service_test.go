@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+func (s *Service) SetTestMachines() {
+	s.machines = []string{"http://192.168.181.16:2379"}
+}
+
 func TestServiceDump(t *testing.T) {
 	var s Service
 	s.SetDefault()
@@ -52,5 +56,18 @@ func TestLoadConfigFile(t *testing.T) {
 func TestSetMachines(t *testing.T) {
 	var ser Service
 	ser.setMachines(nil)
-	ser.Dump()
+	//ser.Dump()
+}
+
+func TestUpdateService(t *testing.T) {
+	var ser Service
+	//ser.LoadConfigFile("config.json")
+	ser.SetDefault()
+	ser.machines = []string{"http://192.168.181.16:2379"}
+	err := ser.UpdateService()
+	if err != nil {
+		t.Fatal("update service error")
+	} else {
+		log.Printf("update service pass")
+	}
 }

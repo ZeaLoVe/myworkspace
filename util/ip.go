@@ -7,6 +7,24 @@ import (
 
 var privateBlocks []*net.IPNet
 
+const ETCDPORT = "2379"
+const ETCDMACHINES = "etcd.sdp"
+
+//get ip by name ,use for etcd machines discoury
+func GetIPByName(name string) []string {
+	ns, err := net.LookupIP(name)
+	if err != nil {
+		fmt.Printf("no ips for %v\n", name)
+		return nil
+	} else {
+		var ips []string
+		for _, ip := range ns {
+			ips = append(ips, ip.String())
+		}
+		return ips
+	}
+}
+
 func init() {
 	// Add each private block
 	privateBlocks = make([]*net.IPNet, 3)

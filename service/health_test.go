@@ -56,7 +56,7 @@ func TestHealthCheck(t *testing.T) {
 	}
 
 	hc.TTL = 0
-	hc.Script = "cd"
+	hc.Script = "dir"
 	hc.Interval = 10
 	if res, err := hc.Check(); err != nil {
 		t.Fatalf(err.Error())

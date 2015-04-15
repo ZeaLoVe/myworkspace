@@ -7,7 +7,7 @@
 "node":"n3",
 "weight":90,
 "text":"for mongo",
-"ttl":20,
+"ttl":5,
 "checks":[
 {"name":"chk1",
 "id":"men",
@@ -33,7 +33,7 @@
 "checks":[
 {"name":"chk1",
 "id":"men",
-"script":"/bin/check",
+"ttl":10,
 "interval":10
 }
 ]

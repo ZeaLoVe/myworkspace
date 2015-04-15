@@ -31,6 +31,12 @@ type HealthCheck struct {
 	Notes     string `json:"notes,omitempty"`
 }
 
+func NewHealthCheck() *HealthCheck {
+	hc := new(HealthCheck)
+	hc.SetDefault()
+	return hc
+}
+
 func (hc *HealthCheck) SetDefault() {
 	if hc.CheckName == "" {
 		hc.CheckName = "defaultcheck"
@@ -64,24 +70,30 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 		log.Printf("fail to setup invoke '%v' with err:'%v'\n", hc.Script, err.Error())
 		return FAIL, err
 	}
-	output, err := cmd.Output()
-	log.Printf("Script return: %v ", string(output))
+	//output, err := cmd.Output()
+	//log.Printf("Script return: %v ", string(output))
 
-	//if err := cmd.Start(); err != nil {
-	//	log.Printf("fail to invoke '%v' with err:'%v'\n", hc.Script, err.Error())
-	//	return FAIL, err
-	//}
+	if err := cmd.Start(); err != nil {
+		log.Printf("fail to invoke '%v' with err:'%v'\n", hc.Script, err.Error())
+		return FAIL, err
+	}
 	exitErr, ok := err.(*exec.ExitError)
 	if ok {
 		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
 			code := status.ExitStatus()
-			if code == 1 {
+			if code == 0 {
+				log.Printf("check '%v' is passing \n", hc.Script)
+				return PASS, nil
+			} else if code == 1 {
 				log.Printf("check '%v' is warning \n", hc.Script)
 				return WARN, err
+			} else {
+				log.Printf("check '%v' is failing \n", hc.Script)
+				return FAIL, err
 			}
 		}
 	}
-	return PASS, err
+	return FAIL, err
 }
 
 func (hc *HealthCheck) HttpCheck() (int, error) {
@@ -108,6 +120,10 @@ func (hc *HealthCheck) HttpCheck() (int, error) {
 }
 
 func (hc *HealthCheck) Check() (int, error) {
+	if hc.TTL == 0 && hc.Script == "" && hc.HTTP == "" {
+		log.Fatalln("miss health check config")
+		return FAIL, errors.New("miss health check config")
+	}
 	if hc.TTL != 0 { //TTL check
 		return hc.TTLCheck()
 	}
