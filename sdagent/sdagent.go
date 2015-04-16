@@ -125,9 +125,11 @@ func (sda *SDAgent) AutoCheck(i int) {
 }
 
 func (sda *SDAgent) Run() {
-	for i, _ := range sda.Jobs {
-		if sda.Jobs[i].CanRun() {
-			go sda.AutoCheck(i)
+	go func() {
+		for i, _ := range sda.Jobs {
+			if sda.Jobs[i].CanRun() {
+				go sda.AutoCheck(i)
+			}
 		}
-	}
+	}()
 }
