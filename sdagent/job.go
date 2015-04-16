@@ -84,7 +84,7 @@ func (j *Job) Run() {
 						log.Printf("[ERR]jobID:%v No etcd machines.\n", j.config.JobID)
 						time.Sleep(time.Second * 1)
 					}
-					log.Printf("[WARM]jobID:%v do updateservice fail", j.config.JobID)
+					log.Printf("[WARM]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
 				} else {
 					log.Printf("[DEBUG]jobID:%v do updateservice success", j.config.JobID)
 				}

@@ -6,10 +6,10 @@ import (
 	"net"
 )
 
-var privateBlocks []*net.IPNet
-
 const ETCDPORT = "2379"
 const ETCDMACHINES = "etcd.sdp"
+
+var privateBlocks []*net.IPNet
 
 //get ip by name ,use for etcd machines discoury
 func GetIPByName(name string) []string {

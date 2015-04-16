@@ -157,7 +157,6 @@ func (s *Service) CheckAll() int {
 
 // call InitService before call this
 func (s *Service) UpdateService() error {
-
 	tmpList := strings.Split(s.Key, ".")
 	for i, j := 0, len(tmpList)-1; i < j; i, j = i+1, j-1 {
 		tmpList[i], tmpList[j] = tmpList[j], tmpList[i]
@@ -178,7 +177,12 @@ func (s *Service) UpdateService() error {
 	}
 	client := etcd.NewClient(s.machines)
 
-	_, errSet := client.Set(key, string(value), s.Ttl)
+	// update first,then set
+	_, errSet := client.Update(key, string(value), s.Ttl)
+	if errSet == nil {
+		return nil
+	}
+	_, errSet = client.Set(key, string(value), s.Ttl)
 	if errSet != nil {
 		return errSet
 	} else {
