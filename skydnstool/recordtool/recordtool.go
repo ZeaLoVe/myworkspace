@@ -71,7 +71,8 @@ func setService(name string, ip string, ttl uint64) error {
 
 func main() {
 	machines = []string{"http://192.168.181.16:2379"} //set default
-	usage = `SKYDNSTOOL version 1.0
+	usage = `
+	SKYDNSTOOL version 1.0
 	Usage:
 	set name ip ttl
 	forexample:set x1.mongo.sd.sdp 192.168.1.1 3600
