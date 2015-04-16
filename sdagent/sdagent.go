@@ -9,12 +9,6 @@ import (
 	"time"
 )
 
-const Version = "0.1"
-const Usage = ` SDAgent versiong 0.1
-Service config file needed in the same folder,named sdconfig.json
-Config file need be json formation.
-`
-
 type SDAgent struct {
 	S    []Service `json:"services,omitempty"`
 	Jobs []Job     `json:"-"`
@@ -22,19 +16,22 @@ type SDAgent struct {
 	stopAgentChan chan uint64
 }
 
-var Agent SDAgent
-
-func init() {
-	Agent = SDAgent{}
-	Agent.stopAgentChan = make(chan uint64, 128)
-	Agent.LoadConfig("sdconfig.json")
-	for i, _ := range Agent.S {
-		job := NewJob()
-		job.S = Agent.S[i]
-		job.S.SetDefault()
-		job.S.InitService()
-		Agent.Jobs = append(Agent.Jobs, *job)
+func NewAgent(config string) *SDAgent {
+	agent := new(SDAgent)
+	agent.stopAgentChan = make(chan uint64, 128)
+	err := agent.LoadConfig(config)
+	if err != nil {
+		return nil
+	} else {
+		for i, _ := range agent.S {
+			job := NewJob()
+			job.S = agent.S[i]
+			job.S.SetDefault()
+			job.S.InitService()
+			agent.Jobs = append(agent.Jobs, *job)
+		}
 	}
+	return agent
 }
 
 func (sda *SDAgent) LoadConfig(filename string) error {
@@ -71,11 +68,12 @@ func (sda *SDAgent) StopAll() {
 	for i, _ := range sda.Jobs {
 		if sda.Jobs[i].config.JOBSTATE == RUNNING {
 			sda.stopAgentChan <- STOPCHANNUM
+			<-sda.stopAgentChan
 			sda.Jobs[i].stopChan <- STOPCHANNUM //stop job
 			<-sda.Jobs[i].stopChan              //wait for stop
 		}
 	}
-	//close(sda.stopAgentChan) pannic here....
+	close(sda.stopAgentChan) //pannic here....
 	log.Println("[DEBUG]Agent all job stopped!")
 }
 

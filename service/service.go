@@ -66,7 +66,7 @@ func (s *Service) SetKey(key string) {
 	}
 }
 
-func (s *Service) setHost(host string) {
+func (s *Service) SetHost(host string) {
 	if s.Host != "" {
 		return
 	}
@@ -83,7 +83,7 @@ func (s *Service) setHost(host string) {
 	}
 }
 
-func (s *Service) setMachines(newMachine []string) {
+func (s *Service) SetMachines(newMachine []string) {
 	if len(newMachine) == 0 {
 		if len(s.machines) != 0 {
 			return //already set
@@ -188,8 +188,8 @@ func (s *Service) UpdateService() error {
 
 func (s *Service) InitService() {
 	s.SetKey("")
-	s.setHost("")
-	s.setMachines(nil)
+	s.SetHost("")
+	s.SetMachines(nil)
 }
 
 //for init service
