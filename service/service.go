@@ -41,6 +41,7 @@ type Service struct {
 	Hc []HealthCheck `json:"checks"`
 
 	machines []string `json:"-"`
+	client   *etcd.Client
 }
 
 func NewService() *Service {
@@ -175,14 +176,16 @@ func (s *Service) UpdateService() error {
 		log.Printf("[ERR]Service:%v No etcd machines.\n", s.Key)
 		return errors.New("No etcd machines")
 	}
-	client := etcd.NewClient(s.machines)
+	if s.client == nil {
+		s.client = etcd.NewClient(s.machines)
+	}
 
 	// update first,then set
-	_, errSet := client.Update(key, string(value), s.Ttl)
+	_, errSet := s.client.Update(key, string(value), s.Ttl)
 	if errSet == nil {
 		return nil
 	}
-	_, errSet = client.Set(key, string(value), s.Ttl)
+	_, errSet = s.client.Set(key, string(value), s.Ttl)
 	if errSet != nil {
 		return errSet
 	} else {

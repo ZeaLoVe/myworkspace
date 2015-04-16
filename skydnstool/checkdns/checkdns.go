@@ -12,15 +12,13 @@ import (
 	"time"
 )
 
-var ReqList []string
-
 var QPS int
 var ThreadNum int
 var CheckRes bool
 var RequestATread int
 var CheckFile string
 var CheckMap map[string]string //Domain Name -> list of address(ip or name)
-
+var ReqList []string
 var workers []Worker
 var stopChan chan int
 
@@ -87,13 +85,9 @@ func main() {
 		for {
 			line, err := buf.ReadString('\n')
 			line = strings.Trim(line, "\r\n")
-			if err == io.EOF {
-				break
-			}
 			if err != nil && err != io.EOF {
 				fmt.Println("read buf error")
 				break
-
 			} else {
 
 				strs := strings.Split(line, " ")
@@ -103,6 +97,9 @@ func main() {
 				}
 				CheckMap[strs[1]] = strs[0]        //make check map
 				ReqList = append(ReqList, strs[0]) //make request list
+				if err == io.EOF {
+					break
+				}
 			}
 		}
 		fmt.Println("Request List:")
@@ -120,7 +117,8 @@ func main() {
 		workers = append(workers, *worker)
 	}
 	for i := 0; i < ThreadNum; i++ {
-		workers[i].interval = time.Duration(float64(1.0/QPS)) * time.Second
+		sleeptime := float64(1000) / float64(QPS)
+		workers[i].interval = time.Duration(sleeptime) * time.Millisecond
 		workers[i].lenOfRequestList = len(ReqList)
 		workers[i].ReqSendNum = 0
 		workers[i].ResFailNum = 0
@@ -134,9 +132,9 @@ func main() {
 	ResSuccessSum := 0
 	for i, _ := range workers {
 		<-stopChan
-		//fmt.Printf("---%v %v %v", workers[i].ReqSendNum, workers[i].ResFailNum, workers[i].ResSuccessNum)
-		ReqSendSum = ReqSendSum + workers[i].ReqSendNum
-		ResFailSum = ResFailSum + workers[i].ResFailNum
+		fmt.Printf("Thread:%v Send:%v Fail:%v Success:%v\n", i, workers[i].ReqSendNum, workers[i].ResFailNum, workers[i].ResSuccessNum)
+		ReqSendSum += workers[i].ReqSendNum
+		ResFailSum += workers[i].ResFailNum
 		ResSuccessSum += workers[i].ResSuccessNum
 	}
 	fmt.Printf("Totally send %v request,Get %v, failed %v,success %v\n", ThreadNum*RequestATread, ResFailSum+ResSuccessSum, ResFailSum, ResSuccessSum)

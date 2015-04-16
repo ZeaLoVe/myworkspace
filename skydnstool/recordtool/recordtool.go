@@ -120,7 +120,8 @@ func main() {
 					fmt.Println(result)
 				}
 			case "file":
-				count := 0
+				var count int
+				count = 0
 				file, err := os.Open(str[1])
 				if err != nil {
 					fmt.Println("open file error")
@@ -136,7 +137,6 @@ func main() {
 					if err != nil && err != io.EOF {
 						fmt.Println("read buf error")
 						break
-
 					} else {
 						strs := strings.Split(line, " ")
 						if len(strs) != 3 {
@@ -152,7 +152,7 @@ func main() {
 						}
 					}
 				}
-				fmt.Printf("%v lines of records set\n", count)
+				fmt.Printf("%v lines of records set success.\n", count)
 			default:
 				fmt.Println(usage)
 			}
