@@ -18,9 +18,9 @@ import (
 
 //Result of health Check
 const (
-	PASS = iota + 1
-	WARN
-	FAIL
+	PASS = iota //0
+	WARN        //1
+	FAIL        //2
 )
 
 type HealthCheck struct {
@@ -74,8 +74,6 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 		log.Printf("[WARM]Fail to setup invoke '%v' with err:'%v'.\n", hc.Script, err.Error())
 		return FAIL, err
 	}
-	//output, err := cmd.Output()
-	//log.Printf("Script return: %v ", string(output))
 
 	if err := cmd.Start(); err != nil {
 		log.Printf("[WARM]Fail to invoke '%v' with err:'%v'.\n", hc.Script, err.Error())
@@ -89,9 +87,9 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 	if ok {
 		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
 			code := status.ExitStatus()
-			log.Printf("[DEBUG]Script Check:'%v' return: %v .\n", hc.Script, code)
+			//log.Printf("[DEBUG]Script Check:'%v' return: %v .\n", hc.Script, code)
 			if code == 0 {
-				log.Printf("[DEBUG]Script Check:'%v' is passing.\n", hc.Script)
+				//log.Printf("[DEBUG]Script Check:'%v' is passing.\n", hc.Script)
 				return PASS, nil
 			} else if code == 1 {
 				log.Printf("[DEBUG]Script Check:'%v' is warning.\n", hc.Script)
@@ -116,7 +114,6 @@ func (hc *HealthCheck) HttpCheck() (int, error) {
 	if err != nil {
 		log.Printf("[WARN]Get '%v' error while reading http body:'%v'.\n", err, body)
 	}
-	//log.Printf("http request:'%v' get status: '%v' with body:'%s'\n", hc.HTTP, resp.Status, body)
 	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
 		return PASS, nil
 	} else if resp.StatusCode == 429 {
@@ -131,15 +128,15 @@ func (hc *HealthCheck) Check() (int, error) {
 	//return success while not set,but warm will be logged
 	if hc.TTL == 0 && hc.Script == "" && hc.HTTP == "" {
 		log.Printf("[WARM]Health check config miss.\n")
-		return PASS, errors.New("miss health check config")
+		return PASS, nil
 	}
 	if hc.TTL != 0 { //TTL check
 		return hc.TTLCheck()
 	}
-	if hc.Script != "" && hc.Interval != 0 {
+	if hc.Script != "" {
 		return hc.ScriptCheck()
 	}
-	if hc.HTTP != "" && hc.Interval != 0 {
+	if hc.HTTP != "" {
 		return hc.HttpCheck()
 	}
 	return PASS, nil

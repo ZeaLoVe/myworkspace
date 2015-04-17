@@ -7,7 +7,7 @@ import (
 )
 
 const ETCDPORT = "2379"
-const ETCDMACHINES = "etcd.sdp"
+const ETCDMACHINES = "zealove.xyz"
 
 var privateBlocks []*net.IPNet
 
@@ -20,6 +20,7 @@ func GetIPByName(name string) []string {
 	} else {
 		var ips []string
 		for _, ip := range ns {
+			//log.Printf("[DEBUG]Get ip:%v for etcd.\n", ip)
 			ips = append(ips, ip.String())
 		}
 		return ips

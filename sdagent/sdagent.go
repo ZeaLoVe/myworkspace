@@ -13,7 +13,7 @@ type SDAgent struct {
 	S    []Service `json:"services,omitempty"`
 	Jobs []Job     `json:"-"`
 
-	stopAgentChan chan uint64
+	stopAgentChan chan uint64 `json:"-"`
 }
 
 func NewAgent(config string) *SDAgent {
@@ -41,8 +41,8 @@ func (sda *SDAgent) LoadConfig(filename string) error {
 		return errors.New("Can't load config file,start agent error!")
 	}
 	if err := json.Unmarshal(config, sda); err != nil {
-		log.Fatal("[ERR]Unmarsh to JSON fail,start agent error!\n")
-		return errors.New("Unmarsh to JSON fail,start agent error!")
+		log.Fatal("[ERR]Unmarsh JSON fail,start agent error!\n")
+		return errors.New("Unmarsh JSON fail,start agent error!")
 	}
 	return nil
 }
@@ -68,7 +68,6 @@ func (sda *SDAgent) StopAll() {
 	for i, _ := range sda.Jobs {
 		if sda.Jobs[i].config.JOBSTATE == RUNNING {
 			sda.stopAgentChan <- STOPCHANNUM
-			<-sda.stopAgentChan
 			sda.Jobs[i].stopChan <- STOPCHANNUM //stop job
 			<-sda.Jobs[i].stopChan              //wait for stop
 		}
@@ -103,7 +102,6 @@ func (sda *SDAgent) StartJob(job *Job) {
 
 func (sda *SDAgent) AutoCheck(i int) {
 	timeout := time.After(sda.Jobs[i].config.UpdateInterval)
-	//timeout := time.After(sda.Jobs[i].config.UpdateInterval)
 	heartbeat := time.Tick(sda.Jobs[i].config.UpdateInterval / 2)
 	for {
 		select {

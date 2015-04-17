@@ -42,10 +42,10 @@ func TestJobSetConfig(t *testing.T) {
 	if job.config.JOBSTATE != READY {
 		log.Printf("job serconfig fail")
 	}
-	if job.config.UpdateInterval != time.Duration(job.S.Ttl/2)*time.Second {
+	if job.config.UpdateInterval != time.Duration(job.S.Ttl-1)*time.Second {
 		t.Fatalf("job Test SetConfig UpdateInterval fail")
 	}
-	log.Printf("%v ----- %v", job.config.JobID, job.S.Key)
+	//log.Printf("%v ----- %v", job.config.JobID, job.S.Key)
 	if job.config.JobID != job.S.Key {
 		t.Fatalf("job Test SetConfig JobID fail")
 	}

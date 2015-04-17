@@ -56,7 +56,6 @@ func TestHealthCheck(t *testing.T) {
 	hc.TTL = 0
 	hc.Script = ""
 	hc.HTTP = "http://baidu.com"
-	hc.Interval = 10
 	if res, err := hc.Check(); err != nil {
 		t.Fatalf(err.Error())
 	} else {
@@ -67,9 +66,19 @@ func TestHealthCheck(t *testing.T) {
 		}
 	}
 
+	hc.HTTP = "https://google.nd"
+	if res, err := hc.Check(); err == nil {
+		t.Fatalf("no error http check here")
+	} else {
+		if res == PASS {
+			t.Fatalf("Fail http check return pass")
+		} else {
+			log.Println("HTTP health check fail check rights")
+		}
+	}
+
 	hc.TTL = 0
 	hc.Script = "ipconfig/all"
-	hc.Interval = 10
 	if res, err := hc.Check(); err != nil {
 		t.Fatalf(err.Error())
 	} else {
@@ -77,6 +86,17 @@ func TestHealthCheck(t *testing.T) {
 			t.Fatalf("Script health check fail")
 		} else {
 			log.Println("Script health check pass")
+		}
+	}
+
+	hc.Script = "dd -t"
+	if res, err := hc.Check(); err == nil {
+		t.Fatalf("no error script check here")
+	} else {
+		if res == PASS {
+			t.Fatalf("Fail script check return pass")
+		} else {
+			log.Println("Script health check fail check right")
 		}
 	}
 

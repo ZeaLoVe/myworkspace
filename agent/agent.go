@@ -23,8 +23,8 @@ func main() {
 	flag.StringVar(&EtcdMachines, "e", "http://192.168.181.16:2379", "etcd address")
 	flag.Parse()
 
-	if ConfigFile != "" && EtcdMachines != "" {
-		log.Printf("Will use Config:%v , Etcd:%v to setup.\n", ConfigFile, EtcdMachines)
+	if ConfigFile != "" {
+		log.Printf("Agent will use file:%v  for configure.\nEtcd machines: %v to setup.\n", ConfigFile, EtcdMachines)
 		agent := NewAgent(ConfigFile)
 		if agent == nil {
 			fmt.Printf("Can't init from given config file:%v .Check the config file to make it right.\n", ConfigFile)
@@ -32,13 +32,18 @@ func main() {
 			tmpEtcd := strings.Split(EtcdMachines, ",")
 			for i, _ := range agent.Jobs {
 				if agent.Jobs[i].S.Machines == "" {
-					agent.Jobs[i].S.SetMachines(tmpEtcd)
+					//better add regex check "http://ip:port"
+					if len(tmpEtcd) == 1 && tmpEtcd[0] == "" {
+						agent.Jobs[i].S.SetMachines(nil)
+					} else {
+						agent.Jobs[i].S.SetMachines(tmpEtcd)
+					}
 				}
 			}
 			defer agent.StopAll()
 			agent.Start()
 			agent.Run()
-			for { // sleep forever..
+			for { // can run a http server here
 				time.Sleep(time.Hour * 1)
 			}
 		}

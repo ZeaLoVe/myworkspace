@@ -1,40 +1,66 @@
 {"services":[
 {
-"name":"mongo",
+"name":"qstore.sdp",
 "port":2334,
 "priority":10,
 "node":"n3",
 "weight":90,
-"text":"for mongo",
-"ttl":5,
-"checks":[
-{"name":"chk1",
-"id":"men",
-"script":"ipconfig",
-"interval":10
-},
-{"name":"chk2",
-"id":"cpu",
-"http":"http://baidu.com",
-"interval":10
-}
-]
+"text":"for qstore",
+"ttl":5
 },
 {
-"name":"mysql",
+"name":"sqlserver.sdp",
 "port":8080,
 "priority":10,
 "node":"n10",
 "weight":100,
-"text":"for mysql",
-"ttl":10,
-"checks":[
-{"name":"chk1",
-"id":"men",
-"ttl":10,
-"interval":10
-}
-]
+"text":"for sqlserver",
+"ttl":30
+},
+{
+"name":"qstore1.sdp",
+"port":23341,
+"priority":10,
+"node":"n31",
+"weight":90,
+"text":"for qstore1",
+"ttl":51
+},
+{
+"name":"qstore2.sdp",
+"port":23342,
+"priority":10,
+"node":"n32",
+"weight":90,
+"text":"for qstore2",
+"ttl":52
+},
+{
+"name":"qstore3.sdp",
+"port":23343,
+"priority":10,
+"node":"n33",
+"weight":90,
+"text":"for qstore3",
+"ttl":53
+},
+{
+"name":"qstore4.sdp",
+"port":23344,
+"priority":10,
+"node":"n34",
+"weight":90,
+"text":"for qstore4",
+"ttl":54
+},
+{
+"name":"qstore5.sdp",
+"port":23345,
+"priority":10,
+"node":"n35",
+"weight":90,
+"text":"for qstore5",
+"ttl":55
 }
 ]
 }

@@ -34,7 +34,7 @@ func TestAgentLoadConfig(t *testing.T) {
 	//	s.Dump()
 	//}
 	if len(Agent.Jobs) == 0 {
-		fmt.Println("no jobs")
+		t.Fatal("no jobs")
 	}
 	//for _, j := range Agent.Jobs {
 	//	j.S.Dump()

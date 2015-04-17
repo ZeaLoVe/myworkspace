@@ -16,6 +16,8 @@ const (
 	RUNNING
 )
 
+//const HeartBeatInterval = time.Duration(5 * time.Second) //heartbeat time
+
 type JobConfig struct {
 	JOBSTATE        int //Runtime state of job: PREPARE->READY->RUNNING->PREPARE
 	LastCheckStatus int //keep for multithread healthcheck
@@ -46,7 +48,8 @@ func (j *Job) CanRun() bool {
 func (j *Job) SetConfig() error {
 	if j.S.Key != "" && j.S.Ttl != 0 {
 		j.config.JobID = j.S.Key
-		j.config.UpdateInterval = time.Duration(j.S.Ttl/2) * time.Second //update time must smaller than TTL
+		//update time must smaller than TTL, to be considering...
+		j.config.UpdateInterval = time.Duration(j.S.Ttl-1) * time.Second
 	} else {
 		log.Println("[WARM]No enough infomation for job SetConfig")
 		return errors.New("No enough infomation for job setconfig")
@@ -100,7 +103,7 @@ func (j *Job) Run() {
 			return
 		case <-heartbeat:
 			j.keepAliveChan <- KEEPALIVENUM //no meanning
-			log.Printf("[DEBUG]jobID:%v heartbeat recieve!", j.config.JobID)
+			//log.Printf("[DEBUG]jobID:%v heartbeat recieve!", j.config.JobID)
 		}
 	}
 }

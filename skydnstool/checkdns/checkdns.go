@@ -33,9 +33,7 @@ type Worker struct {
 
 func (w *Worker) DoRequest() {
 	w.ReqSendNum = w.ReqSendNum + 1
-	//fmt.Printf("---%v %v %v", w.ReqSendNum, w.ResFailNum, w.ResSuccessNum)
 	req := ReqList[w.ReqSendNum%w.lenOfRequestList]
-	//fmt.Printf("sent......%v\n", req)
 	ips := GetIPByName(req)
 	if !CheckRes {
 		if len(ips) != 0 {
@@ -64,9 +62,9 @@ func (w *Worker) Run() {
 }
 
 func main() {
-	flag.IntVar(&QPS, "q", 10, "-q to set qps per thread")
+	flag.IntVar(&QPS, "q", 100, "-q to set qps per thread")
 	flag.IntVar(&ThreadNum, "t", 5, "-t to set worker thread,default set as 5")
-	flag.IntVar(&RequestATread, "r", 10, "-r to set the nums of request a worker will send ,default as 10000")
+	flag.IntVar(&RequestATread, "r", 100, "-r to set the nums of request a worker will send ,default as 10000")
 	flag.BoolVar(&CheckRes, "c", false, "-c to set whether check the result,default not")
 	flag.StringVar(&CheckFile, "f", "", "-f to set check file, DNS(name ip) sets")
 	flag.Parse()
@@ -102,14 +100,6 @@ func main() {
 				}
 			}
 		}
-		fmt.Println("Request List:")
-		for _, str := range ReqList {
-			fmt.Println(str)
-		}
-		fmt.Println("CheckMap:")
-		for key, value := range CheckMap {
-			fmt.Println(key + " " + value)
-		}
 	}
 	for i := 0; i < ThreadNum; i++ {
 		worker := new(Worker)
@@ -118,12 +108,12 @@ func main() {
 	for i := 0; i < ThreadNum; i++ {
 		sleeptime := float64(1000) / float64(QPS)
 		workers[i].interval = time.Duration(sleeptime) * time.Millisecond
+		fmt.Printf("threa ID:%v  internval: %v\n", i, workers[i].interval)
 		workers[i].lenOfRequestList = len(ReqList)
 		workers[i].ReqSendNum = 0
 		workers[i].ResFailNum = 0
 		workers[i].ResSuccessNum = 0
 		workers[i].stopChan = make(chan int)
-		fmt.Printf("set thread internal:%v lenofRequest list:%v \n", workers[i].interval, workers[i].lenOfRequestList)
 		go workers[i].Run()
 	}
 	//wait all worker stop
@@ -138,6 +128,6 @@ func main() {
 		ResSuccessSum += workers[i].ResSuccessNum
 	}
 	fmt.Printf("Totally send %v request,Get %v, failed %v,success %v\n", ThreadNum*RequestATread, ResFailSum+ResSuccessSum, ResFailSum, ResSuccessSum)
-	fmt.Printf("Usable rate: %v", float64(ResSuccessSum)/(float64(ThreadNum*RequestATread)))
+	fmt.Printf("Usable rate: %v\n", float64(ResSuccessSum)/(float64(ThreadNum*RequestATread)))
 
 }

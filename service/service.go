@@ -38,10 +38,10 @@ type Service struct {
 	Ttl      uint64 `json:"ttl,omitempty"`
 	Key      string `json:"key,omitempty"`
 
-	Hc []HealthCheck `json:"checks"`
+	Hc []HealthCheck `json:"checks,omitempty"`
 
-	machines []string `json:"-"`
-	client   *etcd.Client
+	machines []string     `json:"-"`
+	client   *etcd.Client `json:"-"`
 }
 
 func NewService() *Service {
@@ -51,10 +51,11 @@ func NewService() *Service {
 }
 
 func (s *Service) SetKey(key string) {
-	if s.Key != "" { //s.Key already set
-		return
-	}
+
 	if key == "" { //s.Key not set and given key is empty
+		if s.Key != "" { //s.Key already set
+			return
+		}
 		if s.Node != "" {
 			s.Key = s.Node + "." + s.Name
 		} else { //if node not set ,given a randan node name
@@ -68,17 +69,16 @@ func (s *Service) SetKey(key string) {
 }
 
 func (s *Service) SetHost(host string) {
-	if s.Host != "" {
-		return
-	}
 	if host == "" {
+		if s.Host != "" {
+			return
+		}
 		ip, err := GetPrivateIP()
 		if err != nil {
 			log.Printf("[EER]Service of host not set and can't get private IP.\n")
 		} else {
 			s.Host = ip.String()
 		}
-
 	} else {
 		s.Host = host
 	}
@@ -95,6 +95,7 @@ func (s *Service) SetMachines(newMachine []string) {
 			tmpMachines := GetIPByName(ETCDMACHINES)
 			for i, machine := range tmpMachines {
 				tmpMachines[i] = "http://" + machine + ":" + ETCDPORT
+				log.Printf("[DEBUG]Get ip:%v for etcd.\n", tmpMachines[i])
 			}
 			s.machines = tmpMachines
 		}
@@ -136,14 +137,14 @@ func (s *Service) CanRun() bool {
 
 func (s *Service) CheckAll() int {
 	if len(s.Hc) == 0 {
-		log.Printf("[ERR]No health check in service: %v, ignore health check.\n", s.Key)
+		log.Printf("[WARM]No health check in service: %v, ignore health check.\n", s.Key)
 		return PASS
 	}
 	res := PASS
 	for _, health := range s.Hc {
 		oneres, err := health.Check()
-		if err != nil {
-			return FAIL
+		if err != nil && oneres == FAIL {
+			return oneres
 		} else {
 			if oneres == FAIL {
 				return FAIL
@@ -156,8 +157,12 @@ func (s *Service) CheckAll() int {
 	return res
 }
 
-// call InitService before call this
+// A service need to call InitService before UpdateService,one time enough
 func (s *Service) UpdateService() error {
+	if s.Key == "" || s.Host == "" {
+		log.Printf("[WARM]Service:%v Key and Host miss.\n", s.Name)
+		return errors.New("Miss Key and Host")
+	}
 	tmpList := strings.Split(s.Key, ".")
 	for i, j := 0, len(tmpList)-1; i < j; i, j = i+1, j-1 {
 		tmpList[i], tmpList[j] = tmpList[j], tmpList[i]
@@ -170,7 +175,7 @@ func (s *Service) UpdateService() error {
 		return err
 	}
 	log.Printf("[DEBUG]UPdateService key: %v.\n", key)
-	log.Printf("[DEBUG]UPdateService value: %v.\n", string(value))
+	//log.Printf("[DEBUG]UPdateService value: %v.\n", string(value))
 
 	if len(s.machines) == 0 {
 		log.Printf("[ERR]Service:%v No etcd machines.\n", s.Key)
@@ -202,7 +207,7 @@ func (s *Service) InitService() {
 //for init service
 func (s *Service) SetDefault() {
 	if s.Name == "" {
-		s.Name = "defaultservice"
+		s.Name = "default"
 	}
 	if s.Port == 0 {
 		s.Port = 8080
