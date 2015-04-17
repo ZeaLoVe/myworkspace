@@ -91,7 +91,7 @@ func main() {
 				strs := strings.Split(line, " ")
 				if len(strs) != 2 {
 					fmt.Println("format error ,must be:service address")
-					continue
+					break
 				}
 				CheckMap[strs[1]] = strs[0]        //make check map
 				ReqList = append(ReqList, strs[0]) //make request list
