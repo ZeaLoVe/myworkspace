@@ -1,6 +1,6 @@
 #Current Version TODO List
 
-checkdns 工具中添加计时功能，修复行读取时候可能发生的错误
+-
 
 #Next Version TODO List
 
