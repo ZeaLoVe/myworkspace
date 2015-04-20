@@ -119,6 +119,7 @@ func (sda *SDAgent) AutoCheck(i int) {
 			log.Printf("[DEBUG]Agent check jobID:%v stop\n", sda.Jobs[i].config.JobID)
 			return
 		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
