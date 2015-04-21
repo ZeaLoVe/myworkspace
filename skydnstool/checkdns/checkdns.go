@@ -76,7 +76,7 @@ func (w *Worker) Run() {
 func main() {
 	flag.IntVar(&QPS, "q", 10, "-q to set qps per thread")
 	flag.IntVar(&ThreadNum, "t", 5, "-t to set worker thread,default set as 5")
-	flag.IntVar(&RequestATread, "r", 1000, "-r to set the nums of request a worker will send ,default as 1000")
+	flag.IntVar(&RequestATread, "r", 100, "-r to set the nums of request a worker will send ,default as 1000")
 	flag.BoolVar(&CheckRes, "c", false, "-c to set whether check the result,default not")
 	flag.StringVar(&CheckFile, "f", "", "-f to set check file, DNS(name ip) sets")
 	flag.Parse()
@@ -102,6 +102,9 @@ func main() {
 
 				strs := strings.Split(line, " ")
 				if len(strs) != 2 {
+					if err == io.EOF {
+						break
+					}
 					fmt.Println("format error ,must be:service address")
 					continue
 				}
