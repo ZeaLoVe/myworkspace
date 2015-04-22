@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	. "myworkspace/sdagent"
+	"os"
+	"runtime/pprof"
 	"strings"
 	"time"
 )
@@ -17,11 +19,21 @@ Etcd Machines address needed use -e="http://ip:port".default "http://192.168.181
 
 var ConfigFile string
 var EtcdMachines string
+var profile = flag.String("profile", "", "write CPU runtime info to file")
 
 func main() {
+
 	flag.StringVar(&ConfigFile, "f", "sdconfig.json", "path of config file")
 	flag.StringVar(&EtcdMachines, "e", "http://192.168.181.16:2379", "etcd address")
 	flag.Parse()
+	if *profile != "" {
+		f, err := os.Create(*profile)
+		if err != nil {
+			log.Fatal("cant got profile")
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 
 	if ConfigFile != "" {
 		log.Printf("Agent will use file:%v  for configure.\nEtcd machines: %v to setup.\n", ConfigFile, EtcdMachines)
