@@ -19,10 +19,43 @@ const (
 //const HeartBeatInterval = time.Duration(5 * time.Second) //heartbeat time
 
 type JobConfig struct {
-	JOBSTATE        int //Runtime state of job: PREPARE->READY->RUNNING->PREPARE
-	LastCheckStatus int //keep for multithread healthcheck
-	UpdateInterval  time.Duration
-	JobID           string //come from Service.key ,what is unique
+	JOBSTATE int //Runtime state of job: PREPARE->READY->RUNNING->PREPARE
+
+	UpdateInterval time.Duration
+	JobID          string //come from Service.key ,what is unique
+}
+
+//for statistic
+type JobState struct {
+	JobName         string `json:"JobName,omitempty"`
+	FailCount       uint64 `json:"FailCount,omitempty"`
+	UpdateCount     uint64 `json:"UpdateCount,omitempty"`
+	WarnCount       uint64 `json:"WarnCount,omitempty"`
+	HeartBeatSent   uint64 `json:"HeartBeatSent,omitempty"`
+	LastCheckStatus int    `json:"LastCheckStatus,omitempty"`
+}
+
+func (state *JobState) SetJobName(name string) {
+	state.JobName = name
+}
+
+func (state *JobState) SetFail() {
+	state.FailCount++
+	state.LastCheckStatus = FAIL
+}
+
+func (state *JobState) SetSuccess() {
+	state.UpdateCount++
+	state.LastCheckStatus = PASS
+}
+
+func (state *JobState) SetWarn() {
+	state.WarnCount++
+	state.LastCheckStatus = WARN
+}
+
+func (state *JobState) IncHeartBeat() {
+	state.HeartBeatSent++
 }
 
 type Job struct {
@@ -30,6 +63,7 @@ type Job struct {
 	keepAliveChan chan uint64 //check whether job is down
 	stopChan      chan uint64 //get cmd to stop
 	config        JobConfig
+	state         JobState
 }
 
 func NewJob() *Job {
@@ -57,6 +91,7 @@ func (j *Job) SetConfig() error {
 	j.stopChan = make(chan uint64)
 	j.keepAliveChan = make(chan uint64, 10)
 	j.SetJobState(READY) //PREPARE->READY , can run
+	j.state.SetJobName(j.config.JobID)
 	return nil
 }
 
@@ -81,19 +116,22 @@ func (j *Job) Run() {
 		case <-internal: //do update and check
 			res := j.S.CheckAll()
 			if res == PASS {
-				log.Printf("[DEBUG]jobID:%v update service Success", j.config.JobID)
 				if err := j.S.UpdateService(); err != nil {
 					if err.Error() == "No etcd machines" {
 						log.Printf("[ERR]jobID:%v No etcd machines.\n", j.config.JobID)
-						time.Sleep(time.Second * 1)
+						//time.Sleep(time.Second * 1)
 					}
+					j.state.SetFail()
 					log.Printf("[WARM]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
 				} else {
+					j.state.SetSuccess()
 					log.Printf("[DEBUG]jobID:%v do updateservice success", j.config.JobID)
 				}
 			} else if res == WARN {
+				j.state.SetWarn()
 				log.Printf("[WARM]jobID:%v do health check Warn", j.config.JobID)
 			} else if res == FAIL {
+				j.state.SetFail()
 				log.Printf("[WARM]jobID:%v do health check Fail", j.config.JobID)
 			} else {
 				//nothing
@@ -103,7 +141,7 @@ func (j *Job) Run() {
 			return
 		case <-heartbeat:
 			j.keepAliveChan <- KEEPALIVENUM //no meanning
-			//log.Printf("[DEBUG]jobID:%v heartbeat recieve!", j.config.JobID)
+			j.state.IncHeartBeat()
 		}
 	}
 }

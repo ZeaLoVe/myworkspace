@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	. "myworkspace/sdagent"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -44,7 +45,20 @@ func main() {
 			defer agent.StopAll()
 			agent.Start()
 			agent.Run()
-			for { // can run a http server here
+
+			//http server
+			http.HandleFunc("/", agent.StatisticHandle)
+			http.HandleFunc("/state", agent.StatisticHandle)
+			http.HandleFunc("/register", agent.RegisterHandle)
+			http.HandleFunc("/service", agent.ServiceHandle)
+			http.HandleFunc("/job", agent.JobHandle)
+
+			err := http.ListenAndServe(":18180", nil)
+			if err != nil {
+				log.Printf("Can't start http server.\n")
+			}
+
+			for {
 				time.Sleep(time.Hour * 1)
 			}
 		}

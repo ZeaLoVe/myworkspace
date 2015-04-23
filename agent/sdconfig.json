@@ -4,14 +4,12 @@
 "node":"n1",
 "ttl":5,
 "checks":[
-{"name":"chk_1",
-"id":"men",
+{
 "script":"exit 0"
 }
 ]
 },
 {
-"name":"qstore.sdp",
 "node":"n2",
 "ttl":5,
 "checks":[
@@ -26,8 +24,7 @@
 "node":"n3",
 "ttl":10,
 "checks":[
-{"name":"chk_1",
-"id":"menm",
+{
 "script":"exit 0"
 }
 ]
@@ -37,8 +34,7 @@
 "node":"n4",
 "ttl":10,
 "checks":[
-{"name":"chk_1",
-"id":"menmenem",
+{
 "script":"exit 0"
 }
 ]
@@ -48,9 +44,8 @@
 "node":"n5",
 "ttl":10,
 "checks":[
-{"name":"chk_1",
-"id":"menmenem",
-"script":"exit 0"
+{
+"ttl":0
 }
 ]
 },
@@ -59,9 +54,8 @@
 "node":"n6",
 "ttl":15,
 "checks":[
-{"name":"chk_1",
-"id":"menmenem",
-"script":"exit 0"
+{
+"script":"exit 1"
 }
 ]
 },
@@ -70,8 +64,7 @@
 "node":"n7",
 "ttl":5,
 "checks":[
-{"name":"chk_1",
-"id":"menmenem",
+{
 "script":"exit 0"
 }
 ]
