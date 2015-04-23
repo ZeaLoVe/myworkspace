@@ -1,11 +1,7 @@
 {"services":[
 {
 "name":"qstore.sdp",
-"port":2334,
-"priority":10,
 "node":"n1",
-"weight":90,
-"text":"for qstore",
 "ttl":5,
 "checks":[
 {"name":"chk_1",
@@ -16,11 +12,7 @@
 },
 {
 "name":"qstore.sdp",
-"port":8080,
-"priority":10,
 "node":"n2",
-"weight":100,
-"text":"for sqlserver",
 "ttl":5,
 "checks":[
 {"name":"chk_1",
@@ -31,11 +23,7 @@
 },
 {
 "name":"qstore.sdp",
-"port":23341,
-"priority":10,
 "node":"n3",
-"weight":90,
-"text":"for qstore1",
 "ttl":10,
 "checks":[
 {"name":"chk_1",
@@ -46,11 +34,7 @@
 },
 {
 "name":"qstore.sdp",
-"port":23342,
-"priority":10,
 "node":"n4",
-"weight":80,
-"text":"for qstore2",
 "ttl":10,
 "checks":[
 {"name":"chk_1",
@@ -61,11 +45,7 @@
 },
 {
 "name":"qstore.sdp",
-"port":23343,
-"priority":10,
 "node":"n5",
-"weight":90,
-"text":"for qstore3",
 "ttl":10,
 "checks":[
 {"name":"chk_1",
@@ -76,11 +56,7 @@
 },
 {
 "name":"qstore.sdp",
-"port":23344,
-"priority":10,
 "node":"n6",
-"weight":90,
-"text":"for qstore4",
 "ttl":15,
 "checks":[
 {"name":"chk_1",
@@ -91,11 +67,7 @@
 },
 {
 "name":"qstore.sdp",
-"port":23345,
-"priority":10,
 "node":"n7",
-"weight":90,
-"text":"for qstore5",
 "ttl":5,
 "checks":[
 {"name":"chk_1",
