@@ -48,10 +48,10 @@ func (hc *HealthCheck) SetDefault() {
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		hc.CheckID = "chk_id" + strconv.Itoa(r.Intn(100000))
 	}
-	if hc.Timeout == 0 {
+	if hc.Timeout <= 0 {
 		hc.Timeout = 10
 	}
-	if hc.Interval == 0 {
+	if hc.Interval <= 0 {
 		hc.Interval = 10
 	}
 	if hc.Notes == "" {

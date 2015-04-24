@@ -209,16 +209,16 @@ func (s *Service) SetDefault() {
 	if s.Name == "" {
 		s.Name = "default"
 	}
-	if s.Port == 0 {
+	if s.Port <= 0 {
 		s.Port = 8080
 	}
-	if s.Weight == 0 {
+	if s.Weight <= 0 {
 		s.Weight = 100
 	}
-	if s.Priority == 0 {
+	if s.Priority <= 0 {
 		s.Priority = 20
 	}
-	if s.Ttl == 0 {
+	if s.Ttl <= 1 {
 		s.Ttl = 10
 	}
 	if s.Text == "" {

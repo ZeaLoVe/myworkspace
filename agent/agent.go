@@ -55,7 +55,7 @@ func main() {
 
 			err := http.ListenAndServe(":18180", nil)
 			if err != nil {
-				log.Printf("Can't start http server.\n")
+				log.Printf("Can't start http server for statistic.\n")
 			}
 
 			for {
