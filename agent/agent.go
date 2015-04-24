@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	. "myworkspace/sdagent"
+	. "myworkspace/util"
 	"net/http"
 	"strings"
 	"time"
@@ -13,7 +14,7 @@ import (
 const Version = "0.1"
 const Usage = ` SDAgent versiong 0.1
 Service config file needed use -f=filapath.default sdconfig.json
-Etcd Machines address needed use -e="http://ip:port".default "http://192.168.181.16:2379"
+Etcd Machines address needed use -e="http://ip:port".default get by default domain"
 `
 
 var ConfigFile string
@@ -22,11 +23,16 @@ var EtcdMachines string
 func main() {
 
 	flag.StringVar(&ConfigFile, "f", "sdconfig.json", "path of config file")
-	flag.StringVar(&EtcdMachines, "e", "http://192.168.181.16:2379", "etcd address")
+	flag.StringVar(&EtcdMachines, "e", "", "etcd address")
 	flag.Parse()
 
 	if ConfigFile != "" {
-		log.Printf("Agent will use file:%v  for configure.\nEtcd machines: %v to setup.\n", ConfigFile, EtcdMachines)
+		log.Printf("Agent will use file:%v  for configure.\n", ConfigFile)
+		if EtcdMachines == "" {
+			log.Printf("Not Etcd Machines Set, will use Name:%v to get address.\n", ETCDMACHINES)
+		} else {
+			log.Printf("Etcd machines: %v to setup.\n", EtcdMachines)
+		}
 		agent := NewAgent(ConfigFile)
 		if agent == nil {
 			fmt.Printf("Can't init from given config file:%v .Check the config file to make it right.\n", ConfigFile)

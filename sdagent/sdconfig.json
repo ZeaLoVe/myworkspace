@@ -1,6 +1,5 @@
 {"services":[
 {
-"machines":"http://192.168.181.16:4001",
 "name":"qstore.sdp",
 "port":2334,
 "priority":10,
@@ -11,18 +10,11 @@
 "checks":[
 {"name":"chk1",
 "id":"men",
-"script":"/bin/check",
-"interval":10
-},
-{"name":"chk2",
-"id":"cpu",
-"http":"http://baidu.com",
-"interval":10
+"script":"exit 0"
 }
 ]
 },
 {
-"machines":"http://192.168.181.16:2379,http://192.168.181.16:4001",
 "name":"sqlserver.sdp",
 "port":8080,
 "priority":10,

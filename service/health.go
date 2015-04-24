@@ -92,7 +92,7 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 				//log.Printf("[DEBUG]Script Check:'%v' is passing.\n", hc.Script)
 				return PASS, nil
 			} else if code == 1 {
-				log.Printf("[DEBUG]Script Check:'%v' is warning.\n", hc.Script)
+				log.Printf("[WARN]Script Check:'%v' is warning.\n", hc.Script)
 				return WARN, err
 			} else {
 				log.Printf("[DEBUG]Script Check:'%v' is failing.\n", hc.Script)
@@ -127,7 +127,7 @@ func (hc *HealthCheck) HttpCheck() (int, error) {
 func (hc *HealthCheck) Check() (int, error) {
 	//return success while not set,but warm will be logged
 	if hc.TTL == 0 && hc.Script == "" && hc.HTTP == "" {
-		log.Printf("[WARM]Health check config miss.\n")
+		log.Printf("[WARN]Health check config miss.\n")
 		return PASS, nil
 	}
 	if hc.TTL != 0 { //TTL check

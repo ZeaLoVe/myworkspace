@@ -1,8 +1,8 @@
 {"services":[
 {
+"key":"fugai.qstore.sdp",
 "name":"qstore.sdp",
 "node":"n1",
-"ttl":5,
 "checks":[
 {
 "script":"exit 0"
@@ -11,7 +11,7 @@
 },
 {
 "node":"n2",
-"ttl":5,
+"host":"fugai.qstore.sdp",
 "checks":[
 {"name":"chk_1",
 "id":"menm",
@@ -22,7 +22,6 @@
 {
 "name":"qstore.sdp",
 "node":"n3",
-"ttl":10,
 "checks":[
 {
 "script":"exit 0"
@@ -32,7 +31,6 @@
 {
 "name":"qstore.sdp",
 "node":"n4",
-"ttl":10,
 "checks":[
 {
 "script":"exit 0"
@@ -40,32 +38,28 @@
 ]
 },
 {
-"name":"qstore.sdp",
 "node":"n5",
-"ttl":10,
 "checks":[
 {
-"ttl":0
+"ttl":15
 }
 ]
 },
 {
 "name":"qstore.sdp",
 "node":"n6",
-"ttl":15,
 "checks":[
 {
-"script":"exit 1"
+"script":"exit 2"
 }
 ]
 },
 {
 "name":"qstore.sdp",
 "node":"n7",
-"ttl":5,
 "checks":[
 {
-"script":"exit 0"
+"http":"http://baidu.com"
 }
 ]
 }

@@ -137,7 +137,7 @@ func (s *Service) CanRun() bool {
 
 func (s *Service) CheckAll() int {
 	if len(s.Hc) == 0 {
-		log.Printf("[WARM]No health check in service: %v, ignore health check.\n", s.Key)
+		log.Printf("[WARN]No health check in service: %v, ignore health check.\n", s.Key)
 		return PASS
 	}
 	res := PASS
@@ -160,7 +160,7 @@ func (s *Service) CheckAll() int {
 // A service need to call InitService before UpdateService,one time enough
 func (s *Service) UpdateService() error {
 	if s.Key == "" || s.Host == "" {
-		log.Printf("[WARM]Service:%v Key and Host miss.\n", s.Name)
+		log.Printf("[WARN]Service:%v Key and Host miss.\n", s.Name)
 		return errors.New("Miss Key and Host")
 	}
 	tmpList := strings.Split(s.Key, ".")
@@ -171,7 +171,7 @@ func (s *Service) UpdateService() error {
 	key := path.Join(append([]string{"/skydns/"}, tmpList...)...)
 	value, err := s.ParseJSON()
 	if err != nil {
-		log.Printf("[WARM]Can't get value in function UpdateService.\n")
+		log.Printf("[WARN]Can't get value in function UpdateService.\n")
 		return err
 	}
 	log.Printf("[DEBUG]UPdateService key: %v.\n", key)

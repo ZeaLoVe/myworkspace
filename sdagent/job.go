@@ -119,20 +119,20 @@ func (j *Job) Run() {
 				if err := j.S.UpdateService(); err != nil {
 					if err.Error() == "No etcd machines" {
 						log.Printf("[ERR]jobID:%v No etcd machines.\n", j.config.JobID)
-						//time.Sleep(time.Second * 1)
+						continue
 					}
 					j.state.SetFail()
-					log.Printf("[WARM]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
+					log.Printf("[WARN]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
 				} else {
 					j.state.SetSuccess()
-					log.Printf("[DEBUG]jobID:%v do updateservice success", j.config.JobID)
+					//log.Printf("[DEBUG]jobID:%v do updateservice success", j.config.JobID)
 				}
 			} else if res == WARN {
 				j.state.SetWarn()
-				log.Printf("[WARM]jobID:%v do health check Warn", j.config.JobID)
+				log.Printf("[WARN]jobID:%v do health check Warn", j.config.JobID)
 			} else if res == FAIL {
 				j.state.SetFail()
-				log.Printf("[WARM]jobID:%v do health check Fail", j.config.JobID)
+				log.Printf("[WARN]jobID:%v do health check Fail", j.config.JobID)
 			} else {
 				//nothing
 			}
