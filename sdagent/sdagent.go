@@ -27,6 +27,7 @@ func NewAgent(config string) *SDAgent {
 			job := NewJob()
 			job.S = agent.S[i]
 			job.S.SetDefault()
+			//better InitService mannual
 			job.S.InitService()
 			agent.Jobs = append(agent.Jobs, *job)
 		}

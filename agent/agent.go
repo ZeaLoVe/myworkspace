@@ -46,14 +46,9 @@ func main() {
 		} else {
 			tmpEtcd := strings.Split(EtcdMachines, ",")
 			for i, _ := range agent.Jobs {
-				if agent.Jobs[i].S.Machines == "" {
-					//better add regex check "http://ip:port"
-					//given etcd machines is not empty, cover default
-					if len(tmpEtcd) == 1 && tmpEtcd[0] != "" || len(tmpEtcd) != 0 {
-						agent.Jobs[i].S.SetMachines(tmpEtcd)
-					}
-				}
+				agent.Jobs[i].S.SetMachines(tmpEtcd)
 			}
+
 			defer agent.StopAll()
 			agent.Start()
 			agent.Run()

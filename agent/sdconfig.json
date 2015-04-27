@@ -1,26 +1,6 @@
 {"services":[
 {
-"key":"fugai.ng123.sdp",
-"name":"ng.sdp",
-"node":"n1",
-"checks":[
-{
-"script":"exit 0"
-}
-]
-},
-{
-"node":"n2",
-"host":"fugai.ng123.sdp",
-"checks":[
-{"name":"chk_1",
-"id":"menm",
-"script":"exit 0"
-}
-]
-},
-{
-"name":"ng123.sdp",
+"name":"qstore.sp",
 "node":"n3",
 "checks":[
 {
@@ -29,7 +9,7 @@
 ]
 },
 {
-"name":"ng123.sdp",
+"name":"qstore.sp",
 "node":"n4",
 "checks":[
 {
@@ -46,20 +26,11 @@
 ]
 },
 {
-"name":"ng123.sdp",
+"name":"qstore.sp",
 "node":"n6",
 "checks":[
 {
-"script":"exit 0"
-}
-]
-},
-{
-"name":"ng123.sdp",
-"node":"n7",
-"checks":[
-{
-"http":"http://baidu.com"
+"script":"exit 2"
 }
 ]
 }

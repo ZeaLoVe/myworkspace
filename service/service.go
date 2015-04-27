@@ -27,7 +27,6 @@ type ServiceParser struct {
 //use to update DNS data in etcd
 type Service struct {
 	//etcd machines
-	Machines string `json:"machines,omitempty"`
 	Node     string `json:"node,omitempty"`
 	Name     string `json:"name,omitempty"`
 	Host     string `json:"host,omitempty"`
@@ -84,22 +83,22 @@ func (s *Service) SetHost(host string) {
 	}
 }
 
+// if given list is empty ,Get from DNS
+// else replace of given list
 func (s *Service) SetMachines(newMachine []string) {
-	if len(newMachine) == 0 {
-		if len(s.machines) != 0 {
-			return //already set
-		}
-		if len(s.machines) == 0 && s.Machines != "" { //split etcd machines by ,
-			s.machines = strings.Split(s.Machines, ",")
-		} else {
+	if len(newMachine) == 0 || (len(newMachine) == 1 && newMachine[0] == "") {
+		if len(s.machines) == 0 { //Get from DNS
 			tmpMachines := GetIPByName(ETCDMACHINES)
 			for i, machine := range tmpMachines {
 				tmpMachines[i] = "http://" + machine + ":" + ETCDPORT
 			}
 			s.machines = tmpMachines
 		}
-	} else {
+	} else { //replace
 		s.machines = newMachine
+	}
+	for _, machine := range s.machines {
+		log.Printf("[DEBUG]Service %v use machine:%v as etcd server.\n", s.Key, machine)
 	}
 }
 
@@ -180,6 +179,7 @@ func (s *Service) UpdateService() error {
 		log.Printf("[ERR]Service:%v No etcd machines.\n", s.Key)
 		return errors.New("No etcd machines")
 	}
+
 	if s.client == nil {
 		s.client = etcd.NewClient(s.machines)
 	}
@@ -195,6 +195,7 @@ func (s *Service) UpdateService() error {
 	} else {
 		return nil
 	}
+
 }
 
 func (s *Service) InitService() {
