@@ -82,7 +82,7 @@ func (j *Job) CanRun() bool {
 func (j *Job) SetConfig() error {
 	if j.S.Key != "" && j.S.Ttl != 0 {
 		j.config.JobID = j.S.Key
-		//update time must smaller than TTL, to be considering...
+		//update time must smaller than TTL, here make it smaller 1,to be considering...
 		j.config.UpdateInterval = time.Duration(j.S.Ttl-1) * time.Second
 	} else {
 		log.Println("[WARM]No enough infomation for job SetConfig")
@@ -125,7 +125,7 @@ func (j *Job) Run() {
 					log.Printf("[WARN]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
 				} else {
 					j.state.SetSuccess()
-					//log.Printf("[DEBUG]jobID:%v do updateservice success", j.config.JobID)
+					log.Printf("[DEBUG]jobID:%v do updateservice success", j.config.JobID)
 				}
 			} else if res == WARN {
 				j.state.SetWarn()

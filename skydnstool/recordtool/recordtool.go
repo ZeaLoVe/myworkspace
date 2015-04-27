@@ -88,6 +88,7 @@ func main() {
 	other command has no results.
 	`
 	for {
+		fmt.Printf(usage)
 		fmt.Print("SKYDNSTOOL>")
 
 		cmdReader := bufio.NewReader(os.Stdin)

@@ -37,12 +37,12 @@ func NewAgent(config string) *SDAgent {
 func (sda *SDAgent) LoadConfig(filename string) error {
 	config, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal("[ERR]Can't load config file,start agent error!\n")
-		return errors.New("Can't load config file,start agent error!")
+		log.Fatal("[ERR]Can't load config file,Can't start agent!\n")
+		return errors.New("Can't load config file,Can't start agent!")
 	}
 	if err := json.Unmarshal(config, sda); err != nil {
-		log.Fatal("[ERR]Unmarsh JSON fail,start agent error!\n")
-		return errors.New("Unmarsh JSON fail,start agent error!")
+		log.Fatal("[ERR]Parse JSON file fail, Cat't start agent!\n")
+		return errors.New("Parse JSON file fail, Cat't start agent!")
 	}
 	return nil
 }
@@ -52,7 +52,7 @@ func (sda *SDAgent) Start() {
 	countFail := 0
 	for i, _ := range sda.Jobs {
 		if !sda.Jobs[i].CanRun() {
-			log.Printf("[DEBUG]jobID:%v miss something, will not run.\n", sda.Jobs[i].config.JobID)
+			log.Printf("[WARN]jobID:%v miss some config, will not run.\n", sda.Jobs[i].config.JobID)
 			countFail++
 		} else {
 			sda.Jobs[i].SetConfig()
@@ -72,7 +72,7 @@ func (sda *SDAgent) StopAll() {
 			<-sda.Jobs[i].stopChan              //wait for stop
 		}
 	}
-	close(sda.stopAgentChan) //pannic here....
+	close(sda.stopAgentChan)
 	log.Println("[DEBUG]Agent all job stopped!")
 }
 
@@ -91,7 +91,7 @@ func (sda *SDAgent) StartJob(job *Job) {
 		log.Printf("[DEBUG]jobID:%v miss something, will not run\n", job.config.JobID)
 	} else {
 		if job.config.JOBSTATE == RUNNING {
-			log.Printf("[DEBUG]jobID:%v already Running, can't start again\n", job.config.JobID)
+			log.Printf("[DEBUG]jobID:%v already running, can't start again\n", job.config.JobID)
 		}
 		if job.config.JOBSTATE == PREPARE {
 			job.SetConfig()
@@ -106,13 +106,13 @@ func (sda *SDAgent) AutoCheck(i int) {
 	for {
 		select {
 		case <-timeout:
-			log.Printf("[DEBUG]jobID:%v timeout will restart.\n", sda.Jobs[i].config.JobID)
+			log.Printf("[WARN]jobID:%v timeout will restart.\n", sda.Jobs[i].config.JobID)
 			sda.StartJob(&sda.Jobs[i])
 		case <-heartbeat:
 			if keep, ok := <-sda.Jobs[i].keepAliveChan; ok {
 				if keep == KEEPALIVENUM {
 					timeout = time.After(sda.Jobs[i].config.UpdateInterval) //reflesh timeout
-					log.Printf("[DEBUG]Agent get jobID:%v heartbeat\n", sda.Jobs[i].config.JobID)
+					//log.Printf("[DEBUG]Agent get jobID:%v heartbeat\n", sda.Jobs[i].config.JobID)
 				}
 			}
 		case <-sda.stopAgentChan:

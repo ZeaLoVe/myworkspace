@@ -95,7 +95,6 @@ func (s *Service) SetMachines(newMachine []string) {
 			tmpMachines := GetIPByName(ETCDMACHINES)
 			for i, machine := range tmpMachines {
 				tmpMachines[i] = "http://" + machine + ":" + ETCDPORT
-				log.Printf("[DEBUG]Get ip:%v for etcd.\n", tmpMachines[i])
 			}
 			s.machines = tmpMachines
 		}
@@ -174,7 +173,7 @@ func (s *Service) UpdateService() error {
 		log.Printf("[WARN]Can't get value in function UpdateService.\n")
 		return err
 	}
-	log.Printf("[DEBUG]UPdateService key: %v.\n", key)
+	//log.Printf("[DEBUG]UPdateService key: %v.\n", key)
 	//log.Printf("[DEBUG]UPdateService value: %v.\n", string(value))
 
 	if len(s.machines) == 0 {

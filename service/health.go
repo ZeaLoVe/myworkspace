@@ -95,7 +95,7 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 				log.Printf("[WARN]Script Check:'%v' is warning.\n", hc.Script)
 				return WARN, err
 			} else {
-				log.Printf("[DEBUG]Script Check:'%v' is failing.\n", hc.Script)
+				log.Printf("[WARN]Script Check:'%v' is failing.\n", hc.Script)
 				return FAIL, err
 			}
 		}

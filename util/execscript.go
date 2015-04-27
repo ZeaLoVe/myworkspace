@@ -6,13 +6,6 @@ import (
 	"runtime"
 )
 
-func env(key, def string) string {
-	if x := os.Getenv(key); x != "" {
-		return x
-	}
-	return def
-}
-
 func ExecScript(script string) (*exec.Cmd, error) {
 	var shell, flag string
 	if runtime.GOOS == "windows" {

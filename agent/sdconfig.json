@@ -1,7 +1,7 @@
 {"services":[
 {
-"key":"fugai.qstore.sdp",
-"name":"qstore.sdp",
+"key":"fugai.ng123.sdp",
+"name":"ng.sdp",
 "node":"n1",
 "checks":[
 {
@@ -11,7 +11,7 @@
 },
 {
 "node":"n2",
-"host":"fugai.qstore.sdp",
+"host":"fugai.ng123.sdp",
 "checks":[
 {"name":"chk_1",
 "id":"menm",
@@ -20,7 +20,7 @@
 ]
 },
 {
-"name":"qstore.sdp",
+"name":"ng123.sdp",
 "node":"n3",
 "checks":[
 {
@@ -29,7 +29,7 @@
 ]
 },
 {
-"name":"qstore.sdp",
+"name":"ng123.sdp",
 "node":"n4",
 "checks":[
 {
@@ -46,16 +46,16 @@
 ]
 },
 {
-"name":"qstore.sdp",
+"name":"ng123.sdp",
 "node":"n6",
 "checks":[
 {
-"script":"exit 2"
+"script":"exit 0"
 }
 ]
 },
 {
-"name":"qstore.sdp",
+"name":"ng123.sdp",
 "node":"n7",
 "checks":[
 {
