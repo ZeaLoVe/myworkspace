@@ -49,7 +49,9 @@ func (backend *Backend) SetMachines(newMachine []string) error {
 
 func (backend *Backend) UpdateKV(key string, value string, ttl uint64) error {
 	if backend.client == nil {
-		backend.SetMachines(nil)
+		if err := backend.SetMachines(nil); err != nil {
+			return err
+		}
 	}
 	errCh := make(chan error, 2)
 	go func() {
