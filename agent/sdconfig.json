@@ -1,36 +1,767 @@
 {"services":[
 {
-"name":"qstore.sp",
+"name":"bufio.sdp",
+"host":"192.168.181.1",
+"port":2334,
+"priority":10,
+"node":"n1",
+"weight":90,
+"text":"for qstore",
+"ttl":5,
+"checks":[
+{"name":"chk_1",
+"id":"men",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.2",
+"priority":10,
+"node":"n2",
+"weight":100,
+"text":"for sqlserver",
+"ttl":5,
+"checks":[
+{"name":"chk_1",
+"id":"menm",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.3",
+"priority":10,
 "node":"n3",
+"weight":90,
+"text":"for qstore1",
+"ttl":10,
 "checks":[
-{
+{"name":"chk_1",
+"id":"menm",
 "script":"exit 0"
 }
 ]
 },
 {
-"name":"qstore.sp",
+"name":"bufio.sdp",
+"host":"192.168.181.4",
+"port":23342,
+"priority":10,
 "node":"n4",
+"weight":80,
+"text":"for qstore2",
+"ttl":10,
 "checks":[
-{
+{"name":"chk_1",
+"id":"menmenem",
 "script":"exit 0"
 }
 ]
 },
 {
+"name":"bufio.sdp",
+"host":"192.168.181.5",
+"port":23343,
+"priority":10,
 "node":"n5",
+"weight":90,
+"text":"for qstore3",
+"ttl":10,
 "checks":[
-{
-"ttl":15
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
 }
 ]
 },
 {
-"name":"qstore.sp",
+"name":"bufio.sdp",
+"host":"192.168.181.6",
+"port":23344,
+"priority":10,
 "node":"n6",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
 "checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
 {
-"script":"exit 2"
+"name":"bufio.sdp",
+"host":"192.168.181.7",
+"port":23345,
+"priority":10,
+"node":"n7",
+"weight":90,
+"text":"for qstore5",
+"ttl":5,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.8",
+"port":23344,
+"priority":10,
+"node":"n8",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.9",
+"port":23344,
+"priority":10,
+"node":"n9",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.10",
+"port":23344,
+"priority":10,
+"node":"n10",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.11",
+"port":23344,
+"priority":10,
+"node":"n11",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.12",
+"port":23344,
+"priority":10,
+"node":"n12",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.13",
+"port":23344,
+"priority":10,
+"node":"n13",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.14",
+"port":23344,
+"priority":10,
+"node":"n14",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.15",
+"port":23344,
+"priority":10,
+"node":"n15",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.16",
+"port":23344,
+"priority":10,
+"node":"n16",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.17",
+"port":23344,
+"priority":10,
+"node":"n17",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.18",
+"port":23344,
+"priority":10,
+"node":"n18",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.19",
+"port":23344,
+"priority":10,
+"node":"n19",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.20",
+"port":23344,
+"priority":10,
+"node":"n20",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.21",
+"port":23344,
+"priority":10,
+"node":"n21",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.22",
+"port":23344,
+"priority":10,
+"node":"n22",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.23",
+"port":23344,
+"priority":10,
+"node":"n23",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.24",
+"port":23344,
+"priority":10,
+"node":"n24",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.25",
+"port":23344,
+"priority":10,
+"node":"n25",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.26",
+"port":23344,
+"priority":10,
+"node":"n26",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.27",
+"port":23344,
+"priority":10,
+"node":"n27",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.28",
+"port":23344,
+"priority":10,
+"node":"n28",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.29",
+"port":23344,
+"priority":10,
+"node":"n29",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.30",
+"port":23344,
+"priority":10,
+"node":"n30",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.31",
+"port":23344,
+"priority":10,
+"node":"n31",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.32",
+"port":23344,
+"priority":10,
+"node":"n32",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.33",
+"port":23344,
+"priority":10,
+"node":"n33",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.34",
+"port":23344,
+"priority":10,
+"node":"n34",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.35",
+"port":23344,
+"priority":10,
+"node":"n35",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.36",
+"port":23344,
+"priority":10,
+"node":"n36",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.37",
+"port":23344,
+"priority":10,
+"node":"n37",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.38",
+"port":23344,
+"priority":10,
+"node":"n38",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.39",
+"port":23344,
+"priority":10,
+"node":"n39",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.40",
+"port":23344,
+"priority":10,
+"node":"n40",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.41",
+"port":23344,
+"priority":10,
+"node":"n41",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.42",
+"port":23344,
+"priority":10,
+"node":"n42",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.43",
+"port":23344,
+"priority":10,
+"node":"n43",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.44",
+"port":23344,
+"priority":10,
+"node":"n44",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.45",
+"port":23344,
+"priority":10,
+"node":"n45",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.46",
+"port":23344,
+"priority":10,
+"node":"n46",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.47",
+"port":23344,
+"priority":10,
+"node":"n47",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
+}
+]
+},
+{
+"name":"bufio.sdp",
+"host":"192.168.181.48",
+"port":23344,
+"priority":10,
+"node":"n48",
+"weight":90,
+"text":"for qstore4",
+"ttl":15,
+"checks":[
+{"name":"chk_1",
+"id":"menmenem",
+"script":"exit 0"
 }
 ]
 }

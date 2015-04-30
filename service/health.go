@@ -79,10 +79,22 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 		log.Printf("[WARM]Fail to invoke '%v' with err:'%v'.\n", hc.Script, err.Error())
 		return FAIL, err
 	}
-	err = cmd.Wait() // get cmd return value
+	errCh := make(chan error, 2)
+	go func() {
+		errCh <- cmd.Wait() // get cmd return value
+	}()
+
+	go func() {
+		time.Sleep(3 * time.Second) //set default timeout
+		errCh <- fmt.Errorf("%v Check timeout", hc.CheckName)
+	}()
+
+	err = <-errCh
+
 	if err == nil {
 		return PASS, nil
 	}
+
 	exitErr, ok := err.(*exec.ExitError)
 	if ok {
 		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
@@ -106,7 +118,6 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 func (hc *HealthCheck) HttpCheck() (int, error) {
 	resp, err := http.Get(hc.HTTP)
 	if err != nil {
-		log.Printf("[WARN]Http request:'%v' failed. error:'%v'.\n", hc.HTTP, err)
 		return FAIL, err
 	}
 	defer resp.Body.Close()
@@ -125,11 +136,7 @@ func (hc *HealthCheck) HttpCheck() (int, error) {
 }
 
 func (hc *HealthCheck) Check() (int, error) {
-	//return success while not set,but warm will be logged
-	if hc.TTL == 0 && hc.Script == "" && hc.HTTP == "" {
-		log.Printf("[WARN]Health check config miss.\n")
-		return PASS, nil
-	}
+
 	if hc.TTL != 0 { //TTL check
 		return hc.TTLCheck()
 	}
@@ -139,7 +146,10 @@ func (hc *HealthCheck) Check() (int, error) {
 	if hc.HTTP != "" {
 		return hc.HttpCheck()
 	}
-	return PASS, nil
+
+	//return success while not set,but warm will be logged
+	log.Printf("[WARN]Health check config miss.\n")
+	return PASS, fmt.Errorf("Health Check not set")
 }
 
 //for test ,dump value of health check.

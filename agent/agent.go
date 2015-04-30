@@ -1,14 +1,19 @@
+/*
+SDAgent versiong 0.1
+Service config file needed use -f=filapath  default sdconfig.json
+Etcd machines get from DNS use -d=DNS       default zealove.xyz
+Etcd port set              use -p=port      default 2379
+Reload interval set        use -t=num       default 30 unit minute
+*/
+
 package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	. "myworkspace/sdagent"
 	. "myworkspace/util"
-	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -20,53 +25,44 @@ func env(key, def string) string {
 }
 
 const Version = "0.1"
-const Usage = ` SDAgent versiong 0.1
-Service config file needed use -f=filapath.default sdconfig.json
-Etcd Machines address needed use -e="http://ip:port".default get by default domain"
-`
 
-var ConfigFile string
-var EtcdMachines string
+//ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from util
+var CONFIGFILE string
 
 func main() {
 
-	flag.StringVar(&ConfigFile, "f", env("SDAGENT_CONFIGFILE", "sdconfig.json"), "path of config file")
-	flag.StringVar(&EtcdMachines, "e", env("ETCD_MACHINES", ""), "etcd address")
+	flag.StringVar(&CONFIGFILE, "f", env("SDAGENT_CONFIGFILE", "sdconfig.json"), "Path of config file")
+	flag.StringVar(&ETCDDOMAIN, "d", env("SDAGENT_ETCDDOMAIN", "zealove.xyz"), "Name for DNS request of etcd")
+	flag.StringVar(&ETCDPORT, "p", env("SDAGENT_ETCDPORT", "2379"), "etcd client port")
+	flag.IntVar(&MODIFYINTERVAL, "t", 30, "Reload Check Interval")
 	flag.Parse()
-	if ConfigFile != "" {
-		log.Printf("Agent will use file:%v  for configure.\n", ConfigFile)
-		if EtcdMachines == "" {
-			log.Printf("Not Etcd Machines Set, will use Name:%v to get address.\n", ETCDMACHINES)
-		} else {
-			log.Printf("Etcd machines: %v to setup.\n", EtcdMachines)
-		}
-		agent := NewAgent(ConfigFile)
+	if CONFIGFILE != "" {
+		log.Printf("[INFO]SDAgent use file:%v  for configure.\n", CONFIGFILE)
+		agent := NewAgent(CONFIGFILE)
 		if agent == nil {
-			fmt.Printf("Can't init from given config file:%v .Check the config file to make it right.\n", ConfigFile)
+			log.Printf("[ERR]Can't init from given config file:%v .Check the config file to make it right.\n", CONFIGFILE)
 		} else {
-			tmpEtcd := strings.Split(EtcdMachines, ",")
-			for i, _ := range agent.Jobs {
-				agent.Jobs[i].S.SetMachines(tmpEtcd)
-			}
 
-			defer agent.StopAll()
 			agent.Start()
-			agent.Run()
 
-			//http server for statistic
-			http.HandleFunc("/", agent.StatisticHandle)
-			http.HandleFunc("/state", agent.StatisticHandle)
-			http.HandleFunc("/register", agent.RegisterHandle)
-			http.HandleFunc("/service", agent.ServiceHandle)
-			http.HandleFunc("/job", agent.JobHandle)
-
-			err := http.ListenAndServe(":18180", nil)
-			if err != nil {
-				log.Printf("Can't start http server for statistic.\n")
-			}
+			go func() {
+				for {
+					time.Sleep(time.Duration(MODIFYINTERVAL) * time.Minute)
+					tmp, err := agent.Reload(CONFIGFILE)
+					if err == nil && tmp != nil {
+						agent = tmp
+						log.Println("[RELOAD]Reload success.")
+					} else {
+						//log.Println("[RELOAD]Rugular Checked Config File, Not Reload.")
+					}
+				}
+			}()
 
 			for {
-				time.Sleep(time.Hour * 1)
+				time.Sleep(time.Duration(MODIFYINTERVAL) * time.Minute)
+				CONFIGFILE = env("SDAGENT_CONFIGFILE", CONFIGFILE)
+				ETCDDOMAIN = env("SDAGENT_ETCDDOMAIN", ETCDDOMAIN)
+				ETCDPORT = env("SDAGENT_ETCDPORT", ETCDPORT)
 			}
 		}
 	}

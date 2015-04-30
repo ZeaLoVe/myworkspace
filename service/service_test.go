@@ -5,10 +5,6 @@ import (
 	"testing"
 )
 
-func (s *Service) SetTestMachines() {
-	s.machines = []string{"http://192.168.181.16:2379"}
-}
-
 func TestServiceDump(t *testing.T) {
 	var s Service
 	s.SetDefault()
@@ -28,7 +24,7 @@ func TestServiceDump(t *testing.T) {
 	if s.Ttl != 10 {
 		passtest = false
 	}
-	if s.Text != "default text for record something" {
+	if s.Text != "default text" {
 		passtest = false
 	}
 	if passtest != true {
@@ -49,7 +45,7 @@ func TestServiceDump(t *testing.T) {
 func TestParseJSON(t *testing.T) {
 	var ser Service
 	ser.SetDefault()
-	if res, err := ser.ParseJSON(); err == nil {
+	if res, err := ser.DefaultServiceParser().ToJSON(); err == nil {
 		t.Log(string(res))
 		log.Println("test service parseJSON success")
 	} else {
@@ -63,15 +59,6 @@ func TestSetMachines(t *testing.T) {
 	//if ser.machines[0] != "http://192.168.181.16:2379" {
 	//	t.Fatalf("SetMachine nill fail")
 	//}
-	tmp := []string{"http://127.0.0.1:2379"}
-	ser.SetMachines(tmp)
-	if ser.machines[0] != "http://127.0.0.1:2379" {
-		t.Fatalf("SetMachine given address fail")
-	}
-	ser.SetMachines(nil)
-	if ser.machines[0] != "http://127.0.0.1:2379" {
-		t.Fatalf("SetMachine already set given empty fail")
-	}
 }
 
 func TestSetHost(t *testing.T) {
@@ -147,7 +134,7 @@ func TestUpdateService(t *testing.T) {
 	ser.LoadConfigFile("config.json")
 	ser.SetDefault()
 	ser.InitService()
-	err := ser.UpdateService()
+	err := ser.UpdateService(nil)
 	if err != nil {
 		t.Fatal("update service error")
 	} else {

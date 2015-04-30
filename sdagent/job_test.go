@@ -35,7 +35,7 @@ func TestJobSetConfig(t *testing.T) {
 	ser.InitService()
 	job.S = ser
 	job.SetConfig()
-	if job.config.JOBSTATE != PREPARE {
+	if job.config.JOBSTATE != READY {
 		log.Printf("job serconfig error test fail")
 	}
 	job.SetConfig()

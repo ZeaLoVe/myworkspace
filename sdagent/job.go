@@ -1,12 +1,13 @@
 package sdagent
 
 import (
-	"errors"
+	"fmt"
 	"log"
 	. "myworkspace/service"
 	"time"
 )
 
+const NORUNNINGNUM = 43
 const KEEPALIVENUM = 34
 const STOPCHANNUM = 10
 
@@ -15,8 +16,6 @@ const (
 	READY
 	RUNNING
 )
-
-//const HeartBeatInterval = time.Duration(5 * time.Second) //heartbeat time
 
 type JobConfig struct {
 	JOBSTATE int //Runtime state of job: PREPARE->READY->RUNNING->PREPARE
@@ -41,17 +40,14 @@ func (state *JobState) SetJobName(name string) {
 
 func (state *JobState) SetFail() {
 	state.FailCount++
-	state.LastCheckStatus = FAIL
 }
 
 func (state *JobState) SetSuccess() {
 	state.UpdateCount++
-	state.LastCheckStatus = PASS
 }
 
 func (state *JobState) SetWarn() {
 	state.WarnCount++
-	state.LastCheckStatus = WARN
 }
 
 func (state *JobState) IncHeartBeat() {
@@ -71,6 +67,10 @@ func NewJob() *Job {
 	return job
 }
 
+func (j *Job) LastCheckState() int {
+	return j.state.LastCheckStatus
+}
+
 func (j *Job) SetJobState(state int) {
 	j.config.JOBSTATE = state
 }
@@ -85,8 +85,7 @@ func (j *Job) SetConfig() error {
 		//update time must smaller than TTL, here make it smaller 1,to be considering...
 		j.config.UpdateInterval = time.Duration(j.S.Ttl-1) * time.Second
 	} else {
-		log.Println("[WARM]No enough infomation for job SetConfig")
-		return errors.New("No enough infomation for job setconfig")
+		return fmt.Errorf("No enough infomation for job setconfig")
 	}
 	j.stopChan = make(chan uint64)
 	j.keepAliveChan = make(chan uint64, 10)
@@ -109,27 +108,75 @@ func (j *Job) Run() {
 	j.SetJobState(RUNNING)
 	defer j.jobStop()
 	internal := time.Tick(j.config.UpdateInterval)
+	timeout := time.After(j.config.UpdateInterval * 2)
 	heartbeat := time.Tick(j.config.UpdateInterval / 2)
-	log.Printf("[DEBUG]JobID: %v run interval:%v\n", j.config.JobID, j.config.UpdateInterval)
+
+	//check job's heartbeat to make sure it is alive
+	go func() {
+		for {
+			select {
+			case <-timeout:
+				log.Printf("[ERR]jobID:%v timeout.\n", j.config.JobID)
+				return
+			case <-heartbeat:
+				if keep, ok := <-j.keepAliveChan; ok {
+					if keep == KEEPALIVENUM {
+						timeout = time.After(j.config.UpdateInterval * 2) //reflesh timeout
+					}
+					if keep == NORUNNINGNUM {
+						return
+					}
+				} else {
+					return
+				}
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}()
+	// do update
+	j.S.UpdateService(nil)
+	timeoutcount := 0
 	for {
 		select {
-		case <-internal: //do update and check
-			res := j.S.CheckAll()
+		case <-internal: //do update by last check result
+			res := j.LastCheckState() //Get last check result
 			if res == PASS {
-				if err := j.S.UpdateService(); err != nil {
-					if err.Error() == "No etcd machines" {
-						log.Printf("[ERR]jobID:%v No etcd machines.\n", j.config.JobID)
+				if timeoutcount >= 2 {
+					log.Println("[WARN]timeout reset etcd machines")
+					j.S.SetMachines(nil)
+					timeoutcount = 0
+				}
+				if err := j.S.UpdateService(nil); err != nil {
+					if err.Error() == "etcd timeout" {
+						timeoutcount++
 						continue
 					}
 					j.state.SetFail()
 					log.Printf("[WARN]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
 				} else {
 					j.state.SetSuccess()
-					log.Printf("[DEBUG]jobID:%v do updateservice success", j.config.JobID)
+					//log.Printf("[INFO]jobID:%v do updateservice success", j.config.JobID)
 				}
 			} else if res == WARN {
-				j.state.SetWarn()
-				log.Printf("[WARN]jobID:%v do health check Warn", j.config.JobID)
+				if timeoutcount >= 2 {
+					log.Println("[WARN]timeout reset etcd  machines")
+					j.S.SetMachines(nil)
+					timeoutcount = 0
+				}
+				parser := j.S.DefaultServiceParser()
+				parser.ReducePriority() //warn will lower priority
+				if err := j.S.UpdateService(parser); err != nil {
+					if err.Error() == "etcd timeout" {
+						timeoutcount++
+						continue
+					}
+					j.state.SetFail()
+					log.Printf("[WARN]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
+				} else {
+					j.state.SetWarn()
+					log.Printf("[WARN]jobID:%v do health check Warn", j.config.JobID)
+				}
+
 			} else if res == FAIL {
 				j.state.SetFail()
 				log.Printf("[WARN]jobID:%v do health check Fail", j.config.JobID)
@@ -137,11 +184,14 @@ func (j *Job) Run() {
 				//nothing
 			}
 		case <-j.stopChan:
-			log.Printf("[DEBUG]jobID:%v stop.\n", j.config.JobID)
+			j.keepAliveChan <- NORUNNINGNUM
+			log.Printf("[INFO]jobID:%v stop\n", j.config.JobID)
 			return
 		case <-heartbeat:
-			j.keepAliveChan <- KEEPALIVENUM //no meanning
+			j.keepAliveChan <- KEEPALIVENUM
 			j.state.IncHeartBeat()
+			res := j.S.CheckAll()
+			j.state.LastCheckStatus = res
 		}
 	}
 }

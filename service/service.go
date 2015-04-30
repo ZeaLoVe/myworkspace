@@ -2,16 +2,13 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/coreos/go-etcd/etcd"
 	"io/ioutil"
 	"log"
 	"math/rand"
+	. "myworkspace/backends"
 	. "myworkspace/util"
-	"path"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -22,6 +19,26 @@ type ServiceParser struct {
 	Weight   uint64 `json:"weight,omitempty"`
 	Text     string `json:"text,omitempty"`
 	Ttl      uint64 `json:"ttl,omitempty"` //need for DNS records ttl
+}
+
+//priority is higher with smaller value
+func (parser *ServiceParser) ReducePriority() {
+	parser.Priority = parser.Priority + 10
+}
+
+func (parser *ServiceParser) IncreaseWeight(num uint64) {
+	parser.Weight = parser.Weight + num
+}
+
+func (parser *ServiceParser) ReduceWeight(num uint64) {
+	parser.Weight = parser.Weight - num
+	if parser.Weight < 0 {
+		parser.Weight = 100
+	}
+}
+
+func (parser *ServiceParser) ToJSON() ([]byte, error) {
+	return json.Marshal(parser)
 }
 
 //use to update DNS data in etcd
@@ -39,8 +56,7 @@ type Service struct {
 
 	Hc []HealthCheck `json:"checks,omitempty"`
 
-	machines []string     `json:"-"`
-	client   *etcd.Client `json:"-"`
+	backend Backend `json:"-"`
 }
 
 func NewService() *Service {
@@ -53,6 +69,10 @@ func (s *Service) SetKey(key string) {
 
 	if key == "" { //s.Key not set and given key is empty
 		if s.Key != "" { //s.Key already set
+			return
+		}
+		if s.Name == "" { //name is must
+			log.Println("[WARN]Service Name not set")
 			return
 		}
 		if s.Node != "" {
@@ -83,26 +103,13 @@ func (s *Service) SetHost(host string) {
 	}
 }
 
-// if given list is empty ,Get from DNS
-// else replace of given list
 func (s *Service) SetMachines(newMachine []string) {
-	if len(newMachine) == 0 || (len(newMachine) == 1 && newMachine[0] == "") {
-		if len(s.machines) == 0 { //Get from DNS
-			tmpMachines := GetIPByName(ETCDMACHINES)
-			for i, machine := range tmpMachines {
-				tmpMachines[i] = "http://" + machine + ":" + ETCDPORT
-			}
-			s.machines = tmpMachines
-		}
-	} else { //replace
-		s.machines = newMachine
-	}
-	for _, machine := range s.machines {
-		log.Printf("[DEBUG]Service %v use machine:%v as etcd server.\n", s.Key, machine)
+	if err := s.backend.SetMachines(newMachine); err != nil {
+		log.Printf("[WARN]Set Machine Error, err:%v\n", err.Error())
 	}
 }
 
-func (s *Service) ParseJSON() ([]byte, error) {
+func (s *Service) DefaultServiceParser() *ServiceParser {
 	var parser ServiceParser
 	parser.Host = s.Host
 	parser.Port = s.Port
@@ -110,7 +117,7 @@ func (s *Service) ParseJSON() ([]byte, error) {
 	parser.Weight = s.Weight
 	parser.Text = s.Text
 	parser.Ttl = s.Ttl
-	return json.Marshal(parser)
+	return &parser
 }
 
 //this func no use in agent,just for test
@@ -124,9 +131,9 @@ func (s *Service) LoadConfigFile(filename string) {
 	}
 }
 
-//Service can't run job if Key,ttl,machines not set
+//Service can't run job if Key,ttl not set
 func (s *Service) CanRun() bool {
-	if s.Key == "" || s.Ttl == 0 || len(s.machines) == 0 {
+	if s.Key == "" || s.Ttl == 0 {
 		return false
 	} else {
 		return true
@@ -156,46 +163,31 @@ func (s *Service) CheckAll() int {
 }
 
 // A service need to call InitService before UpdateService,one time enough
-func (s *Service) UpdateService() error {
+func (s *Service) UpdateService(parser *ServiceParser) error {
 	if s.Key == "" || s.Host == "" {
-		log.Printf("[WARN]Service:%v Key and Host miss.\n", s.Name)
-		return errors.New("Miss Key and Host")
+		return fmt.Errorf("Miss Key and Host")
 	}
-	tmpList := strings.Split(s.Key, ".")
-	for i, j := 0, len(tmpList)-1; i < j; i, j = i+1, j-1 {
-		tmpList[i], tmpList[j] = tmpList[j], tmpList[i]
+	key := GenKey(s.Key)
+
+	var err error
+	var value []byte
+	if parser == nil {
+		value, err = s.DefaultServiceParser().ToJSON()
+	} else {
+		value, err = parser.ToJSON()
 	}
 
-	key := path.Join(append([]string{"/skydns/"}, tmpList...)...)
-	value, err := s.ParseJSON()
 	if err != nil {
-		log.Printf("[WARN]Can't get value in function UpdateService.\n")
-		return err
+		return fmt.Errorf("Can't get value in UpdateService")
 	}
 	//log.Printf("[DEBUG]UPdateService key: %v.\n", key)
 	//log.Printf("[DEBUG]UPdateService value: %v.\n", string(value))
 
-	if len(s.machines) == 0 {
-		log.Printf("[ERR]Service:%v No etcd machines.\n", s.Key)
-		return errors.New("No etcd machines")
-	}
-
-	if s.client == nil {
-		s.client = etcd.NewClient(s.machines)
-	}
-
-	// update first,then set
-	_, errSet := s.client.Update(key, string(value), s.Ttl)
-	if errSet == nil {
+	if err := s.backend.UpdateKV(key, string(value), s.Ttl); err == nil {
 		return nil
-	}
-	_, errSet = s.client.Set(key, string(value), s.Ttl)
-	if errSet != nil {
-		return errSet
 	} else {
-		return nil
+		return err
 	}
-
 }
 
 func (s *Service) InitService() {
@@ -206,9 +198,7 @@ func (s *Service) InitService() {
 
 //for init service
 func (s *Service) SetDefault() {
-	if s.Name == "" {
-		s.Name = "default"
-	}
+
 	if s.Port <= 0 {
 		s.Port = 8080
 	}
@@ -222,7 +212,7 @@ func (s *Service) SetDefault() {
 		s.Ttl = 10
 	}
 	if s.Text == "" {
-		s.Text = "default text for record something"
+		s.Text = "default text"
 	}
 }
 
@@ -237,7 +227,6 @@ func (s *Service) Dump() {
 	fmt.Printf("priority:%v\n", s.Priority)
 	fmt.Printf("weight:%v\n", s.Weight)
 	fmt.Printf("ttl:%v\n", s.Ttl)
-	fmt.Printf("machines:%v\n", s.machines)
 	fmt.Printf("%v health check set. \n", len(s.Hc))
 	for _, health := range s.Hc {
 		health.Dump()
