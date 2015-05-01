@@ -158,25 +158,8 @@ func (j *Job) Run() {
 					//log.Printf("[INFO]jobID:%v do updateservice success", j.config.JobID)
 				}
 			} else if res == WARN {
-				if timeoutcount >= 2 {
-					log.Println("[WARN]timeout reset etcd  machines")
-					j.S.SetMachines(nil)
-					timeoutcount = 0
-				}
-				parser := j.S.DefaultServiceParser()
-				parser.ReducePriority() //warn will lower priority
-				if err := j.S.UpdateService(parser); err != nil {
-					if err.Error() == "etcd timeout" {
-						timeoutcount++
-						continue
-					}
-					j.state.SetFail()
-					log.Printf("[WARN]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
-				} else {
-					j.state.SetWarn()
-					log.Printf("[WARN]jobID:%v do health check Warn", j.config.JobID)
-				}
-
+				j.state.SetWarn()
+				log.Printf("[WARN]jobID:%v do health check warn", j.config.JobID)
 			} else if res == FAIL {
 				j.state.SetFail()
 				log.Printf("[WARN]jobID:%v do health check Fail", j.config.JobID)
