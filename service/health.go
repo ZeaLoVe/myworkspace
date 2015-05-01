@@ -49,7 +49,7 @@ func (hc *HealthCheck) SetDefault() {
 		hc.CheckID = "chk_id" + strconv.Itoa(r.Intn(100000))
 	}
 	if hc.Timeout <= 0 {
-		hc.Timeout = 10
+		hc.Timeout = 3
 	}
 	if hc.Interval <= 0 {
 		hc.Interval = 10
@@ -85,7 +85,7 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 	}()
 
 	go func() {
-		time.Sleep(3 * time.Second) //set default timeout
+		time.Sleep(time.Duration(hc.Timeout) * time.Second) //set default timeout
 		errCh <- fmt.Errorf("%v Check timeout", hc.CheckName)
 	}()
 
