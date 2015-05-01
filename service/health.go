@@ -85,7 +85,8 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 	}()
 
 	go func() {
-		time.Sleep(time.Duration(hc.Timeout) * time.Second) //set default timeout
+		//time.Sleep(time.Duration(hc.Timeout) * time.Second) //set default timeout
+		time.Sleep(3 * time.Second)
 		errCh <- fmt.Errorf("%v Check timeout", hc.CheckName)
 	}()
 
