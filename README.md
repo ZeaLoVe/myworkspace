@@ -20,7 +20,7 @@ eliminating the complex parts, keep it simple.
 
 5.Prepare config file whitch define services and healthchecks
 
-6.Run agent using -f point to config file , -e point to etcd machines
+6.Run agent -h to see Usage
 
 # Config File Define
 
