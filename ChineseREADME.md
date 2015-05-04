@@ -19,15 +19,14 @@ DNS服务端：SKYDNS
 服务注册和检测端：SDAgent
 
 SDAgent----> etcd <----> SKYDNS
+
 1..*     group(3,6,9..)   1..*
 
 #初次使用
 
 安装GO语言配置GO语言编译环境
 
-在工作目录下获取本代码 git clone XXX
-
-更改根目录名称 从sdagent 为myworkspace ，或者更改项目里使用了 “myworkspace/util”包为“sdagent/util” （历史原因）
+在工作目录下获取本代码 git clone ...
 
 进入agent目录下，执行 go build 会生成可执行文件 
 
