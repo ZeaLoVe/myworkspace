@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
-	. "myworkspace/backends"
-	. "myworkspace/util"
+	. "sdagent/backends"
+	. "sdagent/util"
 	"strconv"
 	"time"
 )

@@ -3,6 +3,7 @@ SDAgent versiong 0.1
 Service config file needed use -f=filapath  default sdconfig.json
 Etcd machines get from DNS use -d=DNS       default zealove.xyz
 Etcd port set              use -p=port      default 2379
+Etcd protocol set          use -h=protocol  default http://
 Reload interval set        use -t=num       default 30 unit minute
 */
 
@@ -11,9 +12,9 @@ package main
 import (
 	"flag"
 	"log"
-	. "myworkspace/sdagent"
-	. "myworkspace/util"
 	"os"
+	. "sdagent/sdagent"
+	. "sdagent/util"
 	"time"
 )
 
@@ -33,6 +34,7 @@ func main() {
 
 	flag.StringVar(&CONFIGFILE, "f", env("SDAGENT_CONFIGFILE", "sdconfig.json"), "Path of config file")
 	flag.StringVar(&ETCDDOMAIN, "d", env("SDAGENT_ETCDDOMAIN", "zealove.xyz"), "Name for DNS request of etcd")
+	flag.StringVar(&ETCDPROTOCOL, "h", env("SDAGENT_ETCDPROTOCOL", "http://"), "etcd client protocol")
 	flag.StringVar(&ETCDPORT, "p", env("SDAGENT_ETCDPORT", "2379"), "etcd client port")
 	flag.IntVar(&MODIFYINTERVAL, "t", 30, "Reload Check Interval")
 	flag.Parse()
@@ -58,11 +60,8 @@ func main() {
 				}
 			}()
 
-			for {
+			for { //main thread sleep
 				time.Sleep(time.Duration(MODIFYINTERVAL) * time.Minute)
-				CONFIGFILE = env("SDAGENT_CONFIGFILE", CONFIGFILE)
-				ETCDDOMAIN = env("SDAGENT_ETCDDOMAIN", ETCDDOMAIN)
-				ETCDPORT = env("SDAGENT_ETCDPORT", ETCDPORT)
 			}
 		}
 	}

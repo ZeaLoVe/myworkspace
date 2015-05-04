@@ -6,12 +6,14 @@ import (
 	"net"
 )
 
+var ETCDPROTOCOL string
 var ETCDPORT string
 var ETCDDOMAIN string
 
 var privateBlocks []*net.IPNet
 
 func init() {
+	ETCDPROTOCOL = "http://"
 	ETCDDOMAIN = "zealove.xyz"
 	ETCDPORT = "2379"
 }

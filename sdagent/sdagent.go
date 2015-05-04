@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	. "myworkspace/service"
-	"myworkspace/util"
+	. "sdagent/service"
+	"sdagent/util"
 	"time"
 )
 
@@ -25,6 +25,9 @@ func NewAgent(config string) *SDAgent {
 	} else {
 		for i, _ := range agent.S {
 			job := NewJob()
+			for j, _ := range agent.S[i].Hc {
+				agent.S[i].Hc[j].SetDefault()
+			}
 			job.S = agent.S[i]
 			job.S.SetDefault()
 			job.S.InitService()

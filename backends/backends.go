@@ -3,8 +3,8 @@ package backends
 import (
 	"fmt"
 	"github.com/coreos/go-etcd/etcd"
-	. "myworkspace/util"
 	"path"
+	. "sdagent/util"
 	"strings"
 	"time"
 )
@@ -38,7 +38,7 @@ func (backend *Backend) SetMachines(newMachine []string) error {
 			return fmt.Errorf("DNS can't got any etcd machines")
 		}
 		for i, machine := range tmpMachines {
-			tmpMachines[i] = "http://" + machine + ":" + ETCDPORT
+			tmpMachines[i] = ETCDPROTOCOL + machine + ":" + ETCDPORT
 		}
 		backend.client = etcd.NewClient(tmpMachines)
 	} else { //replace

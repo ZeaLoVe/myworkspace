@@ -3,7 +3,7 @@ package sdagent
 import (
 	"fmt"
 	"log"
-	. "myworkspace/service"
+	. "sdagent/service"
 	"time"
 )
 

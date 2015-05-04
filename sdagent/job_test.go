@@ -2,7 +2,7 @@ package sdagent
 
 import (
 	"log"
-	. "myworkspace/service"
+	. "sdagent/service"
 	"testing"
 	"time"
 )

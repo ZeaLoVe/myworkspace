@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"myworkspace/util"
+	"sdagent/util"
 )
 
 //Result of health Check
@@ -85,8 +85,7 @@ func (hc *HealthCheck) ScriptCheck() (int, error) {
 	}()
 
 	go func() {
-		//time.Sleep(time.Duration(hc.Timeout) * time.Second) //set default timeout
-		time.Sleep(3 * time.Second)
+		time.Sleep(time.Duration(hc.Timeout) * time.Second) //set default timeout
 		errCh <- fmt.Errorf("%v Check timeout", hc.CheckName)
 	}()
 
@@ -148,7 +147,7 @@ func (hc *HealthCheck) Check() (int, error) {
 		return hc.HttpCheck()
 	}
 
-	//return success while not set,but warm will be logged
+	//return success while health check not set,but warm will be logged
 	log.Printf("[WARN]Health check config miss.\n")
 	return PASS, fmt.Errorf("Health Check not set")
 }
