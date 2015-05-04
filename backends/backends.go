@@ -30,7 +30,7 @@ func (backend *Backend) SetTimeout(timeout int) {
 
 func (backend *Backend) SetMachines(newMachine []string) error {
 	if backend.timeout == 0 {
-		backend.timeout = 5
+		backend.timeout = 3
 	}
 	if len(newMachine) == 0 || (len(newMachine) == 1 && newMachine[0] == "") {
 		tmpMachines := GetIPByName(ETCDDOMAIN)

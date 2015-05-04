@@ -173,8 +173,10 @@ func (j *Job) Run() {
 		case <-heartbeat:
 			j.keepAliveChan <- KEEPALIVENUM
 			j.state.IncHeartBeat()
-			res := j.S.CheckAll()
-			j.state.LastCheckStatus = res
+			go func() {
+				res := j.S.CheckAll()
+				j.state.LastCheckStatus = res
+			}()
 		}
 	}
 }
