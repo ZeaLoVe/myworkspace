@@ -4,7 +4,7 @@ Service config file needed use -f=filapath  default sdconfig.json
 Etcd machines get from DNS use -d=DNS       default zealove.xyz
 Etcd port set              use -p=port      default 2379
 Etcd protocol set          use -h=protocol  default http://
-Reload interval set        use -t=num       default 30 unit minute
+Reload interval set        use -t=num       default 10 unit minute
 */
 
 package main
@@ -29,15 +29,22 @@ const Version = "0.1"
 
 //ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from util
 var CONFIGFILE string
+var PIDFILEPATH string
 
 func main() {
 
 	flag.StringVar(&CONFIGFILE, "f", env("SDAGENT_CONFIGFILE", "sdconfig.json"), "Path of config file")
-	flag.StringVar(&ETCDDOMAIN, "d", env("SDAGENT_ETCDDOMAIN", "zealove.xyz"), "Name for DNS request of etcd")
+	flag.StringVar(&ETCDDOMAIN, "d", env("SDAGENT_ETCDDOMAIN", "zealove.xyz"), "Name for DNS request of etcd machines")
 	flag.StringVar(&ETCDPROTOCOL, "h", env("SDAGENT_ETCDPROTOCOL", "http://"), "etcd client protocol")
 	flag.StringVar(&ETCDPORT, "p", env("SDAGENT_ETCDPORT", "2379"), "etcd client port")
-	flag.IntVar(&MODIFYINTERVAL, "t", 30, "Reload Check Interval")
+	flag.StringVar(&PIDFILEPATH, "m", "", "gen pid file ,use for monit")
+	flag.IntVar(&MODIFYINTERVAL, "t", 10, "Reload Check Interval")
 	flag.Parse()
+
+	if err := GenPidFile(PIDFILEPATH, "sdagent.pid"); err != nil {
+		log.Printf("[WARN]Gen pid file error with %v.\n", err)
+	}
+
 	if CONFIGFILE != "" {
 		log.Printf("[INFO]SDAgent use file:%v  for configure.\n", CONFIGFILE)
 		agent := NewAgent(CONFIGFILE)

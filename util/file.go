@@ -2,6 +2,8 @@ package util
 
 import (
 	"os"
+	"path"
+	"strconv"
 	"time"
 )
 
@@ -22,4 +24,23 @@ func CheckModify(filename string) (bool, error) {
 		}
 	}
 
+}
+
+func GenPidFile(filepath, filename string) error {
+	var target string
+	if filename == "" {
+		filename = "sdagent.pid"
+	}
+	if filepath == "" {
+		target = filename
+	} else {
+		target = path.Join(filepath, filename)
+	}
+	file, err := os.Create(target)
+	if err != nil {
+		return err
+	} else {
+		file.Write([]byte(strconv.Itoa(os.Getpid())))
+	}
+	return nil
 }
