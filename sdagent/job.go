@@ -88,16 +88,16 @@ func (j *Job) SetConfig() error {
 		return fmt.Errorf("No enough infomation for job setconfig")
 	}
 	j.stopChan = make(chan uint64)
-	j.keepAliveChan = make(chan uint64, 10)
+	j.keepAliveChan = make(chan uint64, 100)
 	j.SetJobState(READY) //PREPARE->READY , can run
 	j.state.SetJobName(j.config.JobID)
 	return nil
 }
 
 func (j *Job) jobStop() {
+	j.SetJobState(PREPARE)
 	close(j.stopChan)
 	close(j.keepAliveChan)
-	j.SetJobState(PREPARE)
 }
 
 func (j *Job) Run() {
@@ -107,11 +107,14 @@ func (j *Job) Run() {
 	}
 	j.SetJobState(RUNNING)
 	defer j.jobStop()
-	internal := time.Tick(j.config.UpdateInterval)
-	timeout := time.After(j.config.UpdateInterval * 2)
-	heartbeat := time.Tick(j.config.UpdateInterval / 2)
 
+	internal := time.After(0)
+	timeout := time.After(j.config.UpdateInterval * 3)
+	heartbeatSender := time.Tick(j.config.UpdateInterval)
+	heartbeatReciever := time.Tick(j.config.UpdateInterval)
+	timeoutcount := 0
 	//check job's heartbeat to make sure it is alive
+
 	go func() {
 		for {
 			select {
@@ -121,10 +124,10 @@ func (j *Job) Run() {
 				go j.Run()
 				log.Printf("[INFO]jobID:%v restart.\n", j.config.JobID)
 				return
-			case <-heartbeat:
+			case <-heartbeatReciever:
 				if keep, ok := <-j.keepAliveChan; ok {
 					if keep == KEEPALIVENUM {
-						timeout = time.After(j.config.UpdateInterval * 2) //reflesh timeout
+						timeout = time.After(j.config.UpdateInterval * 3) //reflesh timeout
 					}
 					if keep == NORUNNINGNUM {
 						return
@@ -136,12 +139,11 @@ func (j *Job) Run() {
 			time.Sleep(1 * time.Second)
 		}
 	}()
-	// do update
-	j.S.UpdateService(nil)
-	timeoutcount := 0
+
 	for {
 		select {
 		case <-internal: //do update by last check result
+			internal = time.After(j.config.UpdateInterval)
 			res := j.LastCheckState() //Get last check result
 			if res == PASS {
 				if timeoutcount >= 2 {
@@ -173,7 +175,7 @@ func (j *Job) Run() {
 			j.keepAliveChan <- NORUNNINGNUM
 			log.Printf("[INFO]jobID:%v stop\n", j.config.JobID)
 			return
-		case <-heartbeat:
+		case <-heartbeatSender:
 			j.keepAliveChan <- KEEPALIVENUM
 			j.state.IncHeartBeat()
 			go func() {
