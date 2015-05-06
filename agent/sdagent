@@ -1,0 +1,60 @@
+#!/bin/bash
+pidfile="/var/run"
+binpath="/usr/bin/agent"
+logpath="/var/log/agent.log"
+confpath="/etc/sdconfig.json"
+dns="etcd.sdp.nd"
+
+if [ ! -e $binpath ];then
+        echo "excution file is not exist in /usr/bin/agent "
+        return 1
+fi
+
+if [ ! -e $confpath ];then
+        echo "config file is not exist in /etc/sdconfig.json "
+fi
+
+stop(){
+        if [ ! -e $pidfile/sdagent.pid ];then
+                echo "pid file not exist stop will return"
+                return 1
+        fi
+        pid=`cat $pidfile/sdagent.pid`
+        kill -s 9 $pid
+        count=`ps -ef|grep $pid|grep -v grep`
+        echo $count
+        if [ ! $count ];then
+                echo "stop sdagent success."
+        else
+                echo "stop sdagent fail."
+        fi
+}
+
+start(){
+        echo "start sdagent"
+        if [ -e $pidfile/sdagent.pid ];then
+                rm -f $pidfile/sdagent.pid
+        fi
+        $binpath -d=$dns -f=$confpath -m=$pidfile/ >>$logpath 2>&1 &
+}
+
+restart(){
+        stop
+        start
+}
+
+case "$1" in
+start)
+        start
+        ;;
+stop)
+        stop
+        ;;
+restart)
+        restart
+        ;;
+*)
+        echo "use start/stop/restart"
+        exit 1
+esac
+
