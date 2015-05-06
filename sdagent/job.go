@@ -88,7 +88,7 @@ func (j *Job) SetConfig() error {
 		return fmt.Errorf("No enough infomation for job setconfig")
 	}
 	j.stopChan = make(chan uint64)
-	j.keepAliveChan = make(chan uint64, 100)
+	j.keepAliveChan = make(chan uint64, 1024)
 	j.SetJobState(READY) //PREPARE->READY , can run
 	j.state.SetJobName(j.config.JobID)
 	return nil
@@ -133,7 +133,7 @@ func (j *Job) Run() {
 					return
 				}
 			}
-			time.Sleep(1 * time.Second)
+			time.Sleep(10 * time.Millisecond)
 		}
 	}()
 
