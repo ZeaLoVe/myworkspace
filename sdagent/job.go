@@ -120,9 +120,6 @@ func (j *Job) Run() {
 			select {
 			case <-timeout:
 				log.Printf("[ERR]jobID:%v timeout.\n", j.config.JobID)
-				j.SetConfig()
-				go j.Run()
-				log.Printf("[INFO]jobID:%v restart.\n", j.config.JobID)
 				return
 			case <-heartbeatReciever:
 				if keep, ok := <-j.keepAliveChan; ok {
