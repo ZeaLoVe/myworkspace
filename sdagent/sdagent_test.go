@@ -11,14 +11,13 @@ var Agent SDAgent
 
 func init() {
 	Agent = SDAgent{}
-	Agent.stopAgentChan = make(chan uint64, 128)
 	Agent.LoadConfig("sdconfig.json")
 	for i, _ := range Agent.S {
 		job := NewJob()
 		job.S = Agent.S[i]
 		job.S.SetDefault()
 		job.S.InitService()
-		Agent.Jobs = append(Agent.Jobs, *job)
+		Agent.Jobs = append(Agent.Jobs, job)
 	}
 }
 
@@ -42,15 +41,15 @@ func TestStart(t *testing.T) {
 
 func TestRunAndStop(t *testing.T) {
 	fmt.Println("test RunAndStop start ")
-	Agent.StartJob(&Agent.Jobs[0])
+	Agent.StartJob(Agent.Jobs[0])
 	time.Sleep(5 * time.Second)
-	Agent.StopJob(&Agent.Jobs[0])
+	Agent.StopJob(Agent.Jobs[0])
 	time.Sleep(5 * time.Second)
 	if Agent.Jobs[0].config.JOBSTATE != PREPARE {
 		log.Printf("Stop dont change jobstate")
 	}
-	Agent.StartJob(&Agent.Jobs[1])
-	Agent.StartJob(&Agent.Jobs[0])
+	Agent.StartJob(Agent.Jobs[1])
+	Agent.StartJob(Agent.Jobs[0])
 	time.Sleep(5 * time.Second)
 	Agent.StopAll()
 }
@@ -58,8 +57,8 @@ func TestRunAndStop(t *testing.T) {
 func TestAgentRun(t *testing.T) {
 	Agent.Start()
 	time.Sleep(5 * time.Second)
-	Agent.StopJob(&Agent.Jobs[0])
+	Agent.StopJob(Agent.Jobs[0])
 	time.Sleep(5 * time.Second)
-	Agent.StopJob(&Agent.Jobs[1])
+	Agent.StopJob(Agent.Jobs[1])
 	time.Sleep(5 * time.Second)
 }
