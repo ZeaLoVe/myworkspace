@@ -157,6 +157,7 @@ func (j *Job) Run() {
 					log.Printf("[WARN]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
 				} else {
 					j.state.SetSuccess()
+					timeoutcount = 0
 					//log.Printf("[INFO]jobID:%v do updateservice success", j.config.JobID)
 				}
 			} else if res == WARN {
