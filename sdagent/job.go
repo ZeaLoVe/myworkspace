@@ -151,7 +151,6 @@ func (j *Job) Run() {
 				if err := j.S.UpdateService(nil); err != nil {
 					if err.Error() == "etcd timeout" {
 						timeoutcount++
-						continue
 					}
 					j.state.SetFail()
 					log.Printf("[WARN]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
