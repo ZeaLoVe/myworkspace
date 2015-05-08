@@ -112,7 +112,6 @@ func (j *Job) Run() {
 	timeout := time.After(j.config.UpdateInterval * 3)
 	heartbeatSender := time.Tick(j.config.UpdateInterval)
 	heartbeatReciever := time.Tick(j.config.UpdateInterval)
-	timeoutcount := 0
 	//check job's heartbeat to make sure it is alive
 
 	go func() {
@@ -143,22 +142,22 @@ func (j *Job) Run() {
 			internal = time.After(j.config.UpdateInterval)
 			res := j.LastCheckState() //Get last check result
 			if res == PASS {
-				if timeoutcount >= 2 {
-					log.Println("[WARN]timeout reset etcd machines")
-					j.S.SetMachines(nil)
-					timeoutcount = 0
-				}
-				if err := j.S.UpdateService(nil); err != nil {
-					if err.Error() == "etcd timeout" {
-						timeoutcount++
+				go func() {
+					//retry three times
+					for trytime := 0; trytime < 3; trytime++ {
+						err := j.S.UpdateService(nil)
+						if err != nil {
+							continue
+						} else {
+							j.state.SetSuccess()
+							return
+						}
 					}
 					j.state.SetFail()
-					log.Printf("[WARN]jobID:%v do updateservice fail,error:%v", j.config.JobID, err.Error())
-				} else {
-					j.state.SetSuccess()
-					timeoutcount = 0
-					//log.Printf("[INFO]jobID:%v do updateservice success", j.config.JobID)
-				}
+					log.Printf("[WARN]jobID:%v do updateservice fail, retry out of times", j.config.JobID)
+					j.S.SetMachines(nil)
+				}()
+
 			} else if res == WARN {
 				j.state.SetWarn()
 				log.Printf("[WARN]jobID:%v do health check warn", j.config.JobID)
