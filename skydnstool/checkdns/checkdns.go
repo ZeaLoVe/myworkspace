@@ -151,7 +151,7 @@ func main() {
 				ResSuccessSum += workers[i].ResSuccessNum
 			}
 			fmt.Printf("Mission send %v request,Get %v, failed %v,success %v\n", ThreadNum*RequestATread, ResFailSum+ResSuccessSum, ResFailSum, ResSuccessSum)
-			fmt.Printf("Usable rate: %f\n", float64(ResSuccessSum)/(float64(ThreadNum*RequestATread)))
+			fmt.Printf("Usable rate: %f\n", float64(ResSuccessSum)/(float64(ResSuccessSum+ResFailSum)))
 			fmt.Printf("RPS: %v \nQPS: %v \n", float64(ReqSendSum)/clock.Seconds(), float64(ResSuccessSum+ResFailSum)/clock.Seconds())
 			if ResSuccessSum == ThreadNum*RequestATread {
 				return
@@ -165,7 +165,7 @@ func main() {
 	for i, _ := range workers { //wait stop
 		<-workers[i].stopChan
 	}
-	time.Sleep(2 * time.Second) //wait for finished
+	time.Sleep(5 * time.Second) //wait for finished
 
 	for i, _ := range workers {
 		fmt.Printf("Thread:%v Send:%v Fail:%v Success:%v\n", i, workers[i].ReqSendNum, workers[i].ResFailNum, workers[i].ResSuccessNum)
@@ -174,6 +174,6 @@ func main() {
 		ResSuccessSum += workers[i].ResSuccessNum
 	}
 	fmt.Printf("Totally send %v request,Get %v, failed %v,success %v\n", ThreadNum*RequestATread, ResFailSum+ResSuccessSum, ResFailSum, ResSuccessSum)
-	fmt.Printf("Usable rate: %f\n", float64(ResSuccessSum)/(float64(ThreadNum*RequestATread)))
+	fmt.Printf("Usable rate: %f\n", float64(ResSuccessSum)/(float64(ResSuccessSum+ResFailSum)))
 
 }
