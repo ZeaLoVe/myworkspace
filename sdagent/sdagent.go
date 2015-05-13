@@ -62,7 +62,9 @@ func (sda *SDAgent) Reload(filename string) (*SDAgent, error) {
 				return nil, fmt.Errorf("Start new agent error while reload")
 			} else {
 				tmp.Start()
-				sda.StopAll()
+				if sda != nil {
+					sda.StopAll()
+				}
 				return tmp, nil
 			}
 		}

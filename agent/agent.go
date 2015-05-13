@@ -49,27 +49,25 @@ func main() {
 		log.Printf("[INFO]SDAgent use file:%v  for configure.\n", CONFIGFILE)
 		agent := NewAgent(CONFIGFILE)
 		if agent == nil {
-			log.Printf("[ERR]Can't init from given config file:%v .Check the config file to make it right.\n", CONFIGFILE)
+			log.Printf("[WARN]Can't init from given config file:%v .Nothing run.\n", CONFIGFILE)
 		} else {
-
 			agent.Start()
-
-			go func() {
-				for {
-					time.Sleep(time.Duration(MODIFYINTERVAL) * time.Minute)
-					tmp, err := agent.Reload(CONFIGFILE)
-					if err == nil && tmp != nil {
-						agent = tmp
-						log.Println("[RELOAD]Reload success.")
-					} else {
-						//log.Println("[RELOAD]Rugular Checked Config File, Not Reload.")
-					}
-				}
-			}()
-
-			for { //main thread sleep
+		}
+		go func() {
+			for {
 				time.Sleep(time.Duration(MODIFYINTERVAL) * time.Minute)
+				tmp, err := agent.Reload(CONFIGFILE)
+				if err == nil && tmp != nil {
+					agent = tmp
+					log.Println("[RELOAD]Reload success.")
+				} else {
+					//log.Println("[RELOAD]Rugular Checked Config File, Not Reload.")
+				}
 			}
+		}()
+
+		for { //main thread sleep
+			time.Sleep(time.Duration(MODIFYINTERVAL) * time.Minute)
 		}
 	}
 }
