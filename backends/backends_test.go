@@ -2,7 +2,7 @@ package backends
 
 import (
 	"log"
-	"myworkspace/util"
+	"sdagent/util"
 	"testing"
 )
 
@@ -25,21 +25,21 @@ func TestSetMachines(t *testing.T) {
 	}
 }
 
-func TestUpdateKV(t *testing.T) {
+func TestCheckKV(t *testing.T) {
 	var backend Backend
-	if err := backend.UpdateService("/skydns/cn/nd", "try it", 10); err == nil {
-		log.Println("Update success")
+	if flag, err := backend.CheckKV(GenKey("172.24.133.22:8080")); !flag {
+		log.Printf("Check return false with error: %v", err.Error())
 	} else {
-		t.Fatalf("Update fail error:%v", err.Error())
+		log.Println("172.24.133.22:8080 check ok")
 	}
-	tmpList := util.GetIPByName("baidu.com")
-	for _, machine := range tmpList {
-		log.Println(machine)
-	}
-	backend.SetMachines(tmpList)
-	if err := backend.UpdateService("/skydns/nddd/ddd", "{something:value}", 10); err == nil {
-		t.Fatal("Update success")
+	if flag, err := backend.CheckKV(GenKey("172.24.133.22:8103")); !flag {
+		log.Printf("Check return false with error: %v", err.Error())
 	} else {
-		log.Printf("Update fail error:%v", err.Error())
+		log.Println("172.24.133.22:8103 check ok")
+	}
+	if flag, err := backend.CheckKV(GenKey("192.168.181.16:8080")); !flag {
+		log.Printf("Check return false with error: %v", err.Error())
+	} else {
+		log.Println("192.168.181.16:8080 check ok")
 	}
 }

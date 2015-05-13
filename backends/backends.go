@@ -77,3 +77,22 @@ func (backend *Backend) UpdateKV(key string, value string, ttl uint64) error {
 	err := <-errCh
 	return err
 }
+
+func (backend *Backend) CheckKV(key string) (bool, error) {
+	if backend.client == nil {
+		if err := backend.SetMachines(nil); err != nil {
+			return false, err
+		}
+	}
+	resp, err := backend.client.Get(key, false, true)
+	if err != nil {
+		return false, err
+	} else {
+		if resp.Node.TTL >= 0 {
+			return true, nil
+		} else {
+			return false, fmt.Errorf("key is out of ttl")
+		}
+	}
+	return true, nil
+}
