@@ -82,8 +82,8 @@ func (j *Job) CanRun() bool {
 func (j *Job) SetConfig() error {
 	if j.S.Key != "" && j.S.Ttl != 0 {
 		j.config.JobID = j.S.Key
-		//update time must smaller than TTL, here make it smaller 1,to be considering...
-		j.config.UpdateInterval = time.Duration(j.S.Ttl-1) * time.Second
+		//update time must smaller than TTL, here make it half,to be considering...
+		j.config.UpdateInterval = time.Duration(j.S.Ttl/2) * time.Second
 	} else {
 		return fmt.Errorf("No enough infomation for job setconfig")
 	}
