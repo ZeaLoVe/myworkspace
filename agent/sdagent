@@ -4,7 +4,7 @@ pidfile="/var/run"
 binpath="/usr/bin/agent"
 logpath="/var/log/agent.log"
 confpath="/etc/sdconfig.json"
-dns="etcd.sdp.nd"
+dns="etcd.product.sdp.nd"
 
 if [ ! -e $binpath ];then
         echo "excution file is not exist in /usr/bin/agent "
