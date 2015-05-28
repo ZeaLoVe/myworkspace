@@ -1,6 +1,3 @@
-#cd $GOPATH/src/sdagent/agent
-#go clean
-#go build
 
 rm -f /etc/init.d/sdagent
 rm -f /usr/bin/agent
