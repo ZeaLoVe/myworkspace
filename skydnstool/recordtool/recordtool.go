@@ -1,4 +1,3 @@
-// httpdemo project main.go
 package main
 
 import (
@@ -70,23 +69,34 @@ func setService(name string, ip string, ttl uint64) error {
 }
 
 func main() {
-	machines = []string{"http://192.168.181.16:2379"} //set default
-	usage = `
-	SKYDNSTOOL version 1.0
-	Usage:
-	set name ip ttl
-	forexample:set x1.mongo.sd.sdp 192.168.1.1 3600
-	get name
-	forexample:get x1.mongo.sd.sdp 
-	batch set by file
-	forexample:file RR.txt 
-	RR.txt--------------->
-	example.com 192.168.10.111 3600
-	test.sdp.cn 192.198.1.11 3600
-	x1.mongo.cn 192.198.1.13 3600
-	
-	other command has no results.
-	`
+	machines = []string{"http://etcd.product.sdp.nd:2379"} //set default
+	usage =
+		`
+SKYDNSTOOL version 1.0
+Usage:
+--------------->
+set name ip ttl
+For example:
+set x1.mongo.sd.sdp 192.168.1.1 3600
+--------------->
+get name
+For example:
+get x1.mongo.sd.sdp 
+--------------->
+Batch set by file
+Forexample:
+file RR.txt 
+
+RR.txt like 
+ttl is 360000000 if not set
+---------->
+example.com 192.168.10.111 3600
+test.sdp.cn 192.198.1.11 3600
+x1.mongo.cn 192.198.1.13 3600
+
+
+other command has no results.
+`
 	fmt.Printf(usage)
 	for {
 
@@ -141,16 +151,26 @@ func main() {
 						break
 					} else {
 						strs := strings.Split(line, " ")
-						if len(strs) != 3 {
-							fmt.Println("format error ,must be:key value ttl")
+						if len(strs) != 3 && len(strs) != 2 {
+							fmt.Println("format error ,must be:key value (ttl)")
 							continue
 						}
-						ttl, err := strconv.Atoi(strs[2])
-						if err == nil {
-							err := setService(strs[0], strs[1], uint64(ttl))
-							if err == nil {
-								count = count + 1
+						var ttl int
+						var err error
+						if len(strs) == 2 {
+							ttl = 360000000 //default ttl
+						} else {
+							ttl, err = strconv.Atoi(strs[2])
+							if err != nil {
+								fmt.Printf("input key:%v value:%v fail. \n", strs[0], strs[1])
+								continue
 							}
+						}
+						err = setService(strs[0], strs[1], uint64(ttl))
+						if err == nil {
+							count = count + 1
+						} else {
+							fmt.Printf("key:%v write fail.\n", strs[0])
 						}
 					}
 				}

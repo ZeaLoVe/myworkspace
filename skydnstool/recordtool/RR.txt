@@ -1,7 +1,2 @@
-example.com n10.mysql 3600
-test.sdp.cn n10.mysql 3600
-x1.mongo.cn 192.198.1.13 3600
-x2.sql.cn 192.198.1.12 3600
-x3.dns.cn 192.198.1.16 3600
-x4.sdp.cn 192.198.1.18 3600
-x5.tex.cn 192.198.1.111 3600
+m2.test.sdp 192.168.1.2
+m1.test.sdp 192.168.1.1
