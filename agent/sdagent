@@ -1,47 +1,96 @@
 #!/bin/bash
 
-pidfile="/var/run"
-binpath="/usr/bin/agent"
-logpath="/var/log/agent.log"
-confpath="/etc/sdconfig.json"
-dns="etcd.product.sdp.nd"
+app=sdagent
+pidpath=/var/run
+pidname=agent.pid
+pidfile=$pidpath/$pidname
+binpath=/usr/bin/agent
+logpath=/var/log/agent.log
+confpath=/etc/sdconfig.json
+dns=etcd.product.sdp.nd
 
-if [ ! -e $binpath ];then
-        echo "excution file is not exist in /usr/bin/agent "
-        return 1
-fi
-
-if [ ! -e $confpath ];then
-        echo "config file is not exist in /etc/sdconfig.json "
-fi
+check_pid(){
+		if [ -f $pidfile ];then
+        	pid=`cat $pidfile`
+        	if [ -n $pid ]; then
+           	 	running=`ps -p $pid|grep -v "PID TTY" |wc -l`
+            	return $running
+      		 fi
+    	fi
+  		return 0
+}
 
 stop(){
-        if [ ! -e $pidfile/sdagent.pid ];then
-                echo "pid file not exist stop will return"
-                return 1
-        fi
-        pid=`cat $pidfile/sdagent.pid`
-        kill -s 9 $pid
-        count=`ps -ef|grep $pid|grep -v grep`
-        echo $count
-        if [ ! $count ];then
-                echo "stop sdagent success."
-        else
-                echo "stop sdagent fail."
-        fi
+        pid=`cat $pidfile`
+    	kill $pid
+    	echo "$app stoped..."
 }
 
 start(){
-        echo "start sdagent"
-        if [ -e $pidfile/sdagent.pid ];then
-                rm -f $pidfile/sdagent.pid
-        fi
-        $binpath -d=$dns -f=$confpath -m=$pidfile/ >>$logpath 2>&1 &
+		check_pid
+		running=$?
+		if [ $running -gt 0 ];then
+			echo -n "$app now is running already,pid ="
+			cat $pidfile
+			return 1
+		fi
+		
+        if ! [ -f $confpath ];then
+			echo "config file $confpath doesn't exist"
+			return 1
+		fi
+		
+		if [ ! -e $binpath ];then
+        	echo "excution file is not exist in /usr/bin/agent "
+       	 	return 1
+		fi
+		
+        $binpath -d=$dns -f=$confpath -m=$pidpath >>$logpath 2>&1 &
+		sleep 1
+		echo "$app started.., pid = $!"
 }
 
 restart(){
         stop
+		sleep 1
         start
+}
+
+status() {
+    	check_pid
+    	running=$?
+    	if [ $running -gt 0 ];then
+        	echo started
+   	 	else
+        	echo stoped
+    	fi
+}
+
+tailf() {
+    	tail -f $logpath
+}
+
+install(){
+		cp sdagent /etc/init.d/
+		cp agent /usr/bin/
+		if [ ! -e /etc/sdconfig.json ];then
+       		cp sdconfig.json /etc/
+		fi
+		
+		if [ ! -e /etc/init.d/sdagent ];then
+       		echo "sdagent install fail, can't copy sdagent"
+        	return 1
+		fi
+
+		if [ ! -e /etc/sdconfig.json ];then
+       		echo "sdagent install fail, can't copy sdconfig.json"
+        	return 1
+		fi
+
+		if [ ! -e /usr/bin/agent ];then
+	        echo "sdagent install fail, can't copy agent"
+	        return 1
+		fi
 }
 
 case "$1" in
@@ -54,8 +103,17 @@ stop)
 restart)
         restart
         ;;
+statuc)
+		status
+		;;
+tail)
+		tailf
+		;;
+install)
+		install
+		;;		
 *)
-        echo "use start/stop/restart"
+        echo "use start/stop/restart/status/tail/install"
         exit 1
 esac
 
