@@ -1,10 +1,11 @@
 #!/bin/bash
 
-app=sdagent
+version=1.0.0
+app=sd_agent
 pidpath="/var/run"
 pidname=sdagent.pid
 pidfile=$pidpath/$pidname
-binpath="/usr/bin/sd_agent"
+binpath="/usr/bin/"$app
 logpath="/var/log/agent.log"
 confpath="/etc/sdconfig.json"
 dns="etcd.product.sdp.nd"
@@ -41,7 +42,7 @@ start(){
 	fi
 		
 	if [ ! -e $binpath ];then
-        	echo "excution file is not exist in /usr/bin/agent "
+        	echo "excution file is not exist in /usr/bin/$app"
        	 	return 1
 	fi
 		
@@ -66,28 +67,25 @@ status() {
     	fi
 }
 
+version(){
+	echo $version
+}
+
+
 tailf() {
 	tail -f $logpath
 }
 
 install(){
 	cp sdagent /etc/init.d/
-	cp agent /usr/bin/sd_agent
-	if [ ! -e /etc/sdconfig.json ];then
-       		cp sdconfig.json /etc/
-	fi
+	cp agent /usr/bin/$app
 		
 	if [ ! -e /etc/init.d/sdagent ];then
        		echo "sdagent install fail, can't copy sdagent"
         	return 1
 	fi
 
-	if [ ! -e /etc/sdconfig.json ];then
-       		echo "sdagent install fail, can't copy sdconfig.json"
-        	return 1
-	fi
-
-	if [ ! -e /usr/bin/sd_agent ];then
+	if [ ! -e /usr/bin/$app ];then
 	        echo "sdagent install fail, can't copy agent"
 	        return 1
 	fi
@@ -113,8 +111,11 @@ tail)
 	;;
 install)
 	install
-	;;		
+	;;
+version)
+	version
+	;;
 *)
-        echo "use start/stop/restart/status/tail/install"
+        echo "use start/stop/restart/status/tail/version/install"
         exit 1
 esac
