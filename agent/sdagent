@@ -9,6 +9,7 @@ binpath="/usr/bin/"$app
 logpath="/var/log/agent.log"
 confpath="/etc/sdconfig.json"
 dns="etcd.product.sdp.nd"
+reloadinterval=1
 
 check_pid(){
 	if [ -f $pidfile ];then
@@ -46,7 +47,7 @@ start(){
        	 	return 1
 	fi
 		
-        $binpath -d=$dns -f=$confpath -m=$pidpath >>$logpath 2>&1 &
+        $binpath -d=$dns -f=$confpath -m=$pidpath -t=$reloadinterval  >$logpath 2>&1 &
 	sleep 1
 	echo "$app started.., pid = $!"
 }
@@ -75,6 +76,15 @@ version(){
 tailf() {
 	tail -f $logpath
 }
+
+err(){
+	echo `grep ERR $logpath | wc -l`
+}
+
+warn(){
+	echo `grep WARN $logpath |wc -l`
+}
+
 
 install(){
 	cp sdagent /etc/init.d/
@@ -112,10 +122,16 @@ tail)
 install)
 	install
 	;;
+warn)
+	warn
+	;;
+err)
+	err
+	;;
 version)
 	version
 	;;
 *)
-        echo "use start/stop/restart/status/tail/version/install"
+        echo "use start/stop/restart/status/tail/version/install/warn/err"
         exit 1
 esac
