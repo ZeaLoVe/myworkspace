@@ -98,7 +98,8 @@ func (sda *SDAgent) StopAll() {
 		for i, _ := range sda.Jobs {
 			if sda.Jobs[i].config.JOBSTATE == RUNNING {
 				sda.Jobs[i].stopChan <- STOPCHANNUM //stop job
-				<-sda.Jobs[i].stopChan              //wait for stop
+				//sda.Jobs[i].S.OnlyUpdateService(nil) //only update
+				<-sda.Jobs[i].stopChan //wait for stop
 				count++
 			}
 		}

@@ -18,9 +18,10 @@ import (
 
 //Result of health Check
 const (
-	PASS = iota //0
-	WARN        //1
-	FAIL        //2
+	INIT = iota //0
+	PASS        //1
+	WARN        //2
+	FAIL        //3
 )
 
 type HealthCheck struct {

@@ -162,6 +162,32 @@ func (s *Service) CheckAll() int {
 	return res
 }
 
+// only update, call by reload jobs
+func (s *Service) OnlyUpdateService(parser *ServiceParser) error {
+	if s.Key == "" || s.Host == "" {
+		return fmt.Errorf("Miss Key and Host")
+	}
+	key := GenKey(s.Key)
+
+	var err error
+	var value []byte
+	if parser == nil {
+		value, err = s.DefaultServiceParser().ToJSON()
+	} else {
+		value, err = parser.ToJSON()
+	}
+
+	if err != nil {
+		return fmt.Errorf("Can't get value in OnlyUpdate")
+	}
+
+	if err := s.backend.OnlyUpdate(key, string(value), s.Ttl); err == nil {
+		return nil
+	} else {
+		return err
+	}
+}
+
 // A service need to call InitService before UpdateService,one time enough
 func (s *Service) UpdateService(parser *ServiceParser) error {
 	if s.Key == "" || s.Host == "" {

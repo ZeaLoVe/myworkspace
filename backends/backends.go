@@ -47,6 +47,31 @@ func (backend *Backend) SetMachines(newMachine []string) error {
 	return nil
 }
 
+func (backend *Backend) OnlyUpdate(key string, value string, ttl uint64) error {
+	if backend.client == nil {
+		if err := backend.SetMachines(nil); err != nil {
+			return err
+		}
+	}
+	errCh := make(chan error, 2)
+	go func() {
+		var errSet error
+		if _, errSet = backend.client.Update(key, value, ttl); errSet == nil {
+			//update success
+			//fmt.Println("update success")
+		}
+		errCh <- errSet
+	}()
+
+	go func() {
+		time.Sleep(time.Duration(backend.timeout) * time.Second)
+		errCh <- fmt.Errorf("etcd only update timeout")
+	}()
+
+	err := <-errCh
+	return err
+}
+
 func (backend *Backend) UpdateKV(key string, value string, ttl uint64) error {
 	if backend.client == nil {
 		if err := backend.SetMachines(nil); err != nil {

@@ -32,13 +32,12 @@ var CONFIGFILE string
 var PIDFILEPATH string
 
 func main() {
-
 	flag.StringVar(&CONFIGFILE, "f", env("SDAGENT_CONFIGFILE", "sdconfig.json"), "Path of config file")
 	flag.StringVar(&ETCDDOMAIN, "d", env("SDAGENT_ETCDDOMAIN", "etcd.product.sdp.nd"), "Name for DNS request of etcd machines")
 	flag.StringVar(&ETCDPROTOCOL, "h", env("SDAGENT_ETCDPROTOCOL", "http://"), "etcd client protocol")
 	flag.StringVar(&ETCDPORT, "p", env("SDAGENT_ETCDPORT", "2379"), "etcd client port")
 	flag.StringVar(&PIDFILEPATH, "m", "", "gen pid file ,use for monit")
-	flag.IntVar(&MODIFYINTERVAL, "t", 10, "Reload Check Interval")
+	flag.IntVar(&MODIFYINTERVAL, "t", 1, "Reload Check Interval")
 	flag.Parse()
 
 	if err := GenPidFile(PIDFILEPATH, "sdagent.pid"); err != nil {

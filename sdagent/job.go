@@ -164,6 +164,11 @@ func (j *Job) Run() {
 			} else if res == FAIL {
 				j.state.SetFail()
 				log.Printf("[WARN]jobID:%v do health check Fail", j.config.JobID)
+			} else if res == INIT {
+				err := j.S.OnlyUpdateService(nil)
+				if err != nil {
+					log.Printf("[INFO][INIT]jobID:%v call OnlyUpdate fail, with err:%v", j.config.JobID, err.Error())
+				}
 			} else {
 				//nothing
 			}
