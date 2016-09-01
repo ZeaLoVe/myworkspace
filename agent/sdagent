@@ -89,6 +89,13 @@ warn(){
 install(){
 	cp sdagent /etc/init.d/
 	cp agent /usr/bin/$app
+
+	if [ ! -e $confpath ];then
+		cp sdconfig.json $confpath
+		echo "copy config file to path: $confpath"
+	else
+		echo "config file allready exist ,with path: $confpath"
+	fi
 		
 	if [ ! -e /etc/init.d/sdagent ];then
        		echo "sdagent install fail, can't copy sdagent"
