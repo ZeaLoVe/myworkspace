@@ -108,10 +108,16 @@ func (j *Job) Run() {
 	j.SetJobState(RUNNING)
 	defer j.jobStop()
 
+	//init health check
+	go func() {
+		res := j.S.CheckAll()
+		j.state.LastCheckStatus = res
+	}()
+
 	internal := time.After(0)
-	timeout := time.After(j.config.UpdateInterval * 3)
-	heartbeatSender := time.Tick(j.config.UpdateInterval)
-	heartbeatReciever := time.Tick(j.config.UpdateInterval)
+	timeout := time.After(j.config.UpdateInterval * 2 * 3)
+	heartbeatSender := time.Tick(j.config.UpdateInterval * 2)
+	heartbeatReciever := time.Tick(j.config.UpdateInterval * 2)
 	//check job's heartbeat to make sure it is alive
 
 	go func() {
@@ -143,10 +149,12 @@ func (j *Job) Run() {
 			res := j.LastCheckState() //Get last check result
 			if res == PASS {
 				go func() {
-					//retry three times
-					for trytime := 0; trytime < 3; trytime++ {
+					//retry 2 times
+					waitSecond := j.config.UpdateInterval / 2
+					for trytime := 0; trytime < 2; trytime++ {
 						err := j.S.UpdateService(nil)
 						if err != nil {
+							time.Sleep(waitSecond)
 							continue
 						} else {
 							j.state.SetSuccess()

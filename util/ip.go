@@ -14,7 +14,7 @@ var privateBlocks []*net.IPNet
 
 func init() {
 	ETCDPROTOCOL = "http://"
-	ETCDDOMAIN = "zealove.xyz"
+	ETCDDOMAIN = "etcd.sdp"
 	ETCDPORT = "2379"
 }
 
