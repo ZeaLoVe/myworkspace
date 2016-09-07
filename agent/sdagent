@@ -8,7 +8,7 @@ pidfile=$pidpath/$pidname
 binpath="/usr/bin/"$app
 logpath="/var/log/agent.log"
 confpath="/etc/sdconfig.json"
-dns="etcd.product.sdp.nd"
+etcd="etcd.sdp"
 reloadinterval=1
 
 check_pid(){
@@ -32,7 +32,7 @@ start(){
 	check_pid
 	running=$?
 	if [ $running -gt 0 ];then
-		echo -n "$app now is running already,pid ="
+		echo -n "$app now is running already, pid ="
 		cat $pidfile
 		return 1
 	fi
@@ -47,7 +47,7 @@ start(){
        	 	return 1
 	fi
 		
-        $binpath -d=$dns -f=$confpath -m=$pidpath -t=$reloadinterval  >$logpath 2>&1 &
+        $binpath -d=$etcd -f=$confpath -m=$pidpath -t=$reloadinterval  >$logpath 2>&1 &
 	sleep 1
 	echo "$app started.., pid = $!"
 }
@@ -89,6 +89,13 @@ warn(){
 install(){
 	cp sdagent /etc/init.d/
 	cp agent /usr/bin/$app
+
+	if [ ! -e $confpath ];then
+		cp sdconfig.json $confpath
+		echo "copy config file to path: $confpath"
+	else
+		echo "config file allready exist, with path: $confpath"
+	fi
 		
 	if [ ! -e /etc/init.d/sdagent ];then
        		echo "sdagent install fail, can't copy sdagent"
