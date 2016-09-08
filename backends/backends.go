@@ -82,7 +82,7 @@ func (backend *Backend) OnlyUpdate(key string, value string, ttl uint64) error {
 	}()
 
 	go func() {
-		time.Sleep(time.Duration(5) * time.Second)
+		time.Sleep(time.Duration(3) * time.Second)
 		errCh <- fmt.Errorf("etcd only update timeout")
 	}()
 
@@ -109,7 +109,7 @@ func (backend *Backend) UpdateKV(key string, value string, ttl uint64) error {
 	}()
 
 	go func() {
-		time.Sleep(time.Duration(5) * time.Second)
+		time.Sleep(time.Duration(3) * time.Second)
 		errCh <- fmt.Errorf("etcd timeout")
 	}()
 
