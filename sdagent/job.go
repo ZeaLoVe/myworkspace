@@ -114,10 +114,11 @@ func (j *Job) Run() {
 		j.state.LastCheckStatus = res
 	}()
 
-	internal := time.After(0)
-	timeout := time.After(j.config.UpdateInterval * 2 * 3)
-	heartbeatSender := time.Tick(j.config.UpdateInterval * 2)
-	heartbeatReciever := time.Tick(j.config.UpdateInterval * 2)
+	interval := time.After(0)
+	checkInterval := time.Duration(j.S.Ttl) * time.Second
+	timeout := time.After(checkInterval * 3)
+	heartbeatSender := time.Tick(checkInterval)
+	heartbeatReciever := time.Tick(checkInterval)
 	//check job's heartbeat to make sure it is alive
 
 	go func() {
@@ -129,7 +130,7 @@ func (j *Job) Run() {
 			case <-heartbeatReciever:
 				if keep, ok := <-j.keepAliveChan; ok {
 					if keep == KEEPALIVENUM {
-						timeout = time.After(j.config.UpdateInterval * 3) //reflesh timeout
+						timeout = time.After(checkInterval * 3) //reflesh timeout
 					}
 					if keep == NORUNNINGNUM {
 						return
@@ -144,13 +145,13 @@ func (j *Job) Run() {
 
 	for {
 		select {
-		case <-internal: //do update by last check result
-			internal = time.After(j.config.UpdateInterval)
+		case <-interval: //do update by last check result
+			interval = time.After(j.config.UpdateInterval)
 			res := j.LastCheckState() //Get last check result
 			if res == PASS {
 				go func() {
 					//retry 2 times
-					waitSecond := j.config.UpdateInterval / 2
+					waitSecond := checkInterval
 					for trytime := 0; trytime < 2; trytime++ {
 						err := j.S.UpdateService(nil)
 						if err != nil {
@@ -168,10 +169,10 @@ func (j *Job) Run() {
 
 			} else if res == WARN {
 				j.state.SetWarn()
-				log.Printf("[WARN]jobID:%v do health check warn", j.config.JobID)
+				//log.Printf("[WARN]jobID:%v do health check warn", j.config.JobID)
 			} else if res == FAIL {
 				j.state.SetFail()
-				log.Printf("[WARN]jobID:%v do health check Fail", j.config.JobID)
+				//log.Printf("[WARN]jobID:%v do health check Fail", j.config.JobID)
 			} else if res == INIT {
 				err := j.S.OnlyUpdateService(nil)
 				if err != nil {
@@ -189,6 +190,11 @@ func (j *Job) Run() {
 			j.state.IncHeartBeat()
 			go func() {
 				res := j.S.CheckAll()
+				if res == WARN {
+					log.Printf("[WARN]jobID:%v do health check warn", j.config.JobID)
+				} else if res == FAIL {
+					log.Printf("[WARN]jobID:%v do health check Fail", j.config.JobID)
+				}
 				j.state.LastCheckStatus = res
 			}()
 		}
