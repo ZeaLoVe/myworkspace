@@ -151,7 +151,7 @@ func (j *Job) Run() {
 			if res == PASS {
 				go func() {
 					//retry 2 times
-					waitSecond := checkInterval
+					waitSecond := j.config.UpdateInterval / 2
 					for trytime := 0; trytime < 2; trytime++ {
 						err := j.S.UpdateService(nil)
 						if err != nil {
