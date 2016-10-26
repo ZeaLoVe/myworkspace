@@ -82,8 +82,17 @@ func (j *Job) CanRun() bool {
 func (j *Job) SetConfig() error {
 	if j.S.Key != "" && j.S.Ttl != 0 {
 		j.config.JobID = j.S.Key
+
 		//update time must smaller than TTL, here make it half,to be considering...
-		j.config.UpdateInterval = time.Duration(j.S.Ttl/2) * time.Second
+		//UpdateInterval depends on ttl
+		//if ttl > 5 min(300) than it's 300 , if ttl < 10 second(10) than it's 5, else make it half of ttl
+		if j.S.Ttl >= 300 {
+			j.config.UpdateInterval = 300 * time.Second
+		} else if j.S.Ttl <= 10 {
+			j.config.UpdateInterval = 5 * time.Second
+		} else {
+			j.config.UpdateInterval = time.Duration(j.S.Ttl/2) * time.Second
+		}
 	} else {
 		return fmt.Errorf("No enough infomation for job setconfig")
 	}
@@ -111,11 +120,16 @@ func (j *Job) Run() {
 	//init health check
 	go func() {
 		res := j.S.CheckAll()
+		if res == WARN {
+			log.Printf("[WARN]jobID:%v do health check warn", j.config.JobID)
+		} else if res == FAIL {
+			log.Printf("[WARN]jobID:%v do health check Fail", j.config.JobID)
+		}
 		j.state.LastCheckStatus = res
 	}()
 
 	interval := time.After(0)
-	checkInterval := time.Duration(j.S.Ttl) * time.Second
+	checkInterval := j.config.UpdateInterval
 	timeout := time.After(checkInterval * 3)
 	heartbeatSender := time.Tick(checkInterval)
 	heartbeatReciever := time.Tick(checkInterval)
@@ -176,7 +190,9 @@ func (j *Job) Run() {
 			} else if res == INIT {
 				err := j.S.OnlyUpdateService(nil)
 				if err != nil {
-					log.Printf("[INFO][INIT]jobID:%v call OnlyUpdate fail, with err:%v", j.config.JobID, err.Error())
+					log.Printf("[INFO][INIT]jobID:%v domain not exist, only update called with nothing change.", j.config.JobID)
+				} else {
+					log.Printf("[INFO][INIT]jobID:%v domain exist, only update called change ttl to %v.", j.config.JobID, j.S.Ttl)
 				}
 			} else {
 				//nothing
