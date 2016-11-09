@@ -25,7 +25,7 @@ func env(key, def string) string {
 	return def
 }
 
-const Version = "1.1"
+const Version = "1.3.1"
 
 //ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from util
 var CONFIGFILE string

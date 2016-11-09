@@ -178,7 +178,7 @@ func (j *Job) Run() {
 					}
 					j.state.SetFail()
 					log.Printf("[WARN]jobID:%v do updateservice fail, retry out of times", j.config.JobID)
-					j.S.SetMachines(nil)
+					//					j.S.SetMachines(nil)
 				}()
 
 			} else if res == WARN {

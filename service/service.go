@@ -56,7 +56,7 @@ type Service struct {
 
 	Hc []HealthCheck `json:"checks,omitempty"`
 
-	backend Backend `json:"-"`
+	//	backend Backend `json:"-"`
 }
 
 func NewService() *Service {
@@ -103,11 +103,11 @@ func (s *Service) SetHost(host string) {
 	}
 }
 
-func (s *Service) SetMachines(newMachine []string) {
-	if err := s.backend.SetMachines(newMachine); err != nil {
-		log.Printf("[WARN]Set Machine Error, err:%v\n", err.Error())
-	}
-}
+//func (s *Service) SetMachines(newMachine []string) {
+//	if err := s.backend.SetMachines(newMachine); err != nil {
+//		log.Printf("[WARN]Set Machine Error, err:%v\n", err.Error())
+//	}
+//}
 
 func (s *Service) DefaultServiceParser() *ServiceParser {
 	var parser ServiceParser
@@ -181,7 +181,7 @@ func (s *Service) OnlyUpdateService(parser *ServiceParser) error {
 		return fmt.Errorf("Can't get value in OnlyUpdate")
 	}
 
-	if err := s.backend.OnlyUpdate(key, string(value), s.Ttl); err == nil {
+	if err := DefaultBackend.OnlyUpdate(key, string(value), s.Ttl); err == nil {
 		return nil
 	} else {
 		return err
@@ -209,7 +209,7 @@ func (s *Service) UpdateService(parser *ServiceParser) error {
 	//log.Printf("[DEBUG]UPdateService key: %v.\n", key)
 	//log.Printf("[DEBUG]UPdateService value: %v.\n", string(value))
 
-	if err := s.backend.UpdateKV(key, string(value), s.Ttl); err == nil {
+	if err := DefaultBackend.UpdateKV(key, string(value), s.Ttl); err == nil {
 		return nil
 	} else {
 		return err
@@ -219,7 +219,7 @@ func (s *Service) UpdateService(parser *ServiceParser) error {
 func (s *Service) InitService() {
 	s.SetKey("")
 	s.SetHost("")
-	s.SetMachines(nil)
+	//	s.SetMachines(nil)
 }
 
 //for init service

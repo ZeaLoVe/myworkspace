@@ -2,6 +2,7 @@ package backends
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"path"
@@ -27,6 +28,12 @@ type Backend struct {
 	client etcdClient.KeysAPI
 }
 
+var DefaultBackend = Backend{}
+
+func init() {
+	DefaultBackend.SetMachines(nil)
+}
+
 //Get key write to etcd
 func GenKey(name string) string {
 	tmpList := strings.Split(name, ".")
@@ -49,6 +56,7 @@ func (backend *Backend) SetMachines(newMachine []string) error {
 	} else { //replace
 		tmpMachines = newMachine
 	}
+	log.Println("etcd machines set:", tmpMachines)
 	cfg := etcdClient.Config{
 		Endpoints: tmpMachines,
 		Transport: SDagentTransport,
