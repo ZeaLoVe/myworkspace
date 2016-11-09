@@ -13,6 +13,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	. "sdagent/backends"
 	. "sdagent/sdagent"
 	. "sdagent/util"
 	"time"
@@ -33,7 +34,7 @@ var PIDFILEPATH string
 
 func main() {
 	flag.StringVar(&CONFIGFILE, "f", env("SDAGENT_CONFIGFILE", "sdconfig.json"), "Path of config file")
-	flag.StringVar(&ETCDDOMAIN, "d", env("SDAGENT_ETCDDOMAIN", "etcd.product.sdp.nd"), "Name for DNS request of etcd machines")
+	flag.StringVar(&ETCDDOMAIN, "d", env("SDAGENT_ETCDDOMAIN", "etcd.sdp"), "Name for DNS request of etcd machines")
 	flag.StringVar(&ETCDPROTOCOL, "h", env("SDAGENT_ETCDPROTOCOL", "http://"), "etcd client protocol")
 	flag.StringVar(&ETCDPORT, "p", env("SDAGENT_ETCDPORT", "2379"), "etcd client port")
 	flag.StringVar(&PIDFILEPATH, "m", "", "gen pid file ,use for monit")
@@ -50,6 +51,9 @@ func main() {
 		if agent == nil {
 			log.Printf("[WARN]Can't init from given config file:%v .Nothing run.\n", CONFIGFILE)
 		} else {
+
+			//Band etcd machine with backend，reload will not change it，if changed need restart
+			DefaultBackend.SetMachines(nil)
 			agent.Start()
 		}
 		go func() {

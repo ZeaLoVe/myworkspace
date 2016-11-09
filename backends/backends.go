@@ -30,10 +30,6 @@ type Backend struct {
 
 var DefaultBackend = Backend{}
 
-func init() {
-	DefaultBackend.SetMachines(nil)
-}
-
 //Get key write to etcd
 func GenKey(name string) string {
 	tmpList := strings.Split(name, ".")
