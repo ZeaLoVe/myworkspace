@@ -128,7 +128,9 @@ func (j *Job) Run() {
 		j.state.LastCheckStatus = res
 	}()
 
-	interval := time.After(0)
+	//sleep for first update
+	interval := time.After(time.Second)
+
 	checkInterval := j.config.UpdateInterval
 	timeout := time.After(checkInterval * 3)
 	heartbeatSender := time.Tick(checkInterval)

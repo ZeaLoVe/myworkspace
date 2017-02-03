@@ -26,7 +26,8 @@ func env(key, def string) string {
 	return def
 }
 
-const Version = "1.3.1"
+//1.3.2 首次health check完后休眠一段时间再更新域名
+const Version = "1.3.2"
 
 //ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from util
 var CONFIGFILE string
