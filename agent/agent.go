@@ -26,8 +26,8 @@ func env(key, def string) string {
 	return def
 }
 
-//1.3.2 首次health check完后休眠一段时间再更新域名
-const Version = "1.3.2"
+//1.3.3 如果health check 结果为INIT未执行，则在5s后再次调用域名更新的操作
+const Version = "1.3.3"
 
 //ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from util
 var CONFIGFILE string

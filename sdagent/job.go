@@ -129,7 +129,7 @@ func (j *Job) Run() {
 	}()
 
 	//sleep for first update
-	interval := time.After(time.Second)
+	interval := time.After(100 * time.Millisecond)
 
 	checkInterval := j.config.UpdateInterval
 	timeout := time.After(checkInterval * 3)
@@ -190,6 +190,8 @@ func (j *Job) Run() {
 				j.state.SetFail()
 				//log.Printf("[WARN]jobID:%v do health check Fail", j.config.JobID)
 			} else if res == INIT {
+				//if init, call update quickly
+				interval = time.After(5 * time.Second)
 				err := j.S.OnlyUpdateService(nil)
 				if err != nil {
 					log.Printf("[INFO][INIT]jobID:%v domain not exist, only update called with nothing change.", j.config.JobID)
