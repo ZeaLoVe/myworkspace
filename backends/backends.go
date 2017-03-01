@@ -32,7 +32,8 @@ var DefaultBackend = Backend{}
 
 //Get key write to etcd
 func GenKey(name string) string {
-	tmpList := strings.Split(name, ".")
+	//name must be lower
+	tmpList := strings.Split(strings.ToLower(name), ".")
 	for i, j := 0, len(tmpList)-1; i < j; i, j = i+1, j-1 {
 		tmpList[i], tmpList[j] = tmpList[j], tmpList[i]
 	}
