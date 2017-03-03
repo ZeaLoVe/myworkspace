@@ -50,7 +50,7 @@ func (hc *HealthCheck) SetDefault() {
 		hc.CheckID = "chk_id" + strconv.Itoa(r.Intn(100000))
 	}
 	if hc.Timeout <= 0 {
-		hc.Timeout = 3
+		hc.Timeout = 10
 	}
 	if hc.Interval <= 0 {
 		hc.Interval = 10

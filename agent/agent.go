@@ -27,7 +27,9 @@ func env(key, def string) string {
 }
 
 //1.3.3 如果health check 结果为INIT未执行，则在5s后再次调用域名更新的操作
-const Version = "1.3.3"
+//1.3.4 修复域名注册的时候存在大写字母的问题
+//1.3.5 增加health check 的默认超时时间从3秒到10秒
+const Version = "1.3.5"
 
 //ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from util
 var CONFIGFILE string
