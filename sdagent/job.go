@@ -164,6 +164,7 @@ func (j *Job) Run() {
 		case <-interval: //do update by last check result
 			interval = time.After(j.config.UpdateInterval)
 			res := j.LastCheckState() //Get last check result
+			//			log.Printf("[WARN]jobID:%v interval with check %d", j.config.JobID, res)
 			if res == PASS {
 				go func() {
 					//retry 2 times

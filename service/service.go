@@ -237,9 +237,9 @@ func (s *Service) SetDefault() {
 	if s.Ttl <= 1 {
 		s.Ttl = 10
 	}
-	if s.Text == "" {
-		s.Text = "default text"
-	}
+	//	if s.Text == "" {
+	//		s.Text = "default text"
+	//	}
 }
 
 //for test

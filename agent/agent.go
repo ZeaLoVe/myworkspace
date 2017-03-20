@@ -29,9 +29,10 @@ func env(key, def string) string {
 //1.3.3 如果health check 结果为INIT未执行，则在5s后再次调用域名更新的操作
 //1.3.4 修复域名注册的时候存在大写字母的问题
 //1.3.5 增加health check 的默认超时时间从3秒到10秒
-const Version = "1.3.5"
+//1.4.1 增加etcd账号
+const Version = "1.4.1"
 
-//ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from util
+//ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from backends
 var CONFIGFILE string
 var PIDFILEPATH string
 
@@ -41,6 +42,8 @@ func main() {
 	flag.StringVar(&ETCDPROTOCOL, "h", env("SDAGENT_ETCDPROTOCOL", "http://"), "etcd client protocol")
 	flag.StringVar(&ETCDPORT, "p", env("SDAGENT_ETCDPORT", "2379"), "etcd client port")
 	flag.StringVar(&PIDFILEPATH, "m", "", "gen pid file ,use for monit")
+	flag.StringVar(&ETCDACCOUNT, "u", env("ETCD_ACCOUNT", "skydns"), "etcd account")
+	flag.StringVar(&ETCDPASSWORD, "w", env("ETCD_PASSWORD", "skydns"), "etcd password")
 	flag.IntVar(&MODIFYINTERVAL, "t", 1, "Reload Check Interval")
 	flag.Parse()
 

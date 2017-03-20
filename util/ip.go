@@ -6,17 +6,7 @@ import (
 	"net"
 )
 
-var ETCDPROTOCOL string
-var ETCDPORT string
-var ETCDDOMAIN string
-
 var privateBlocks []*net.IPNet
-
-func init() {
-	ETCDPROTOCOL = "http://"
-	ETCDDOMAIN = "etcd.sdp"
-	ETCDPORT = "2379"
-}
 
 //get ip by name ,use for etcd machines discoury
 func GetIPByName(name string) []string {
