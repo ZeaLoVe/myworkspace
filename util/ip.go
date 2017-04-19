@@ -2,26 +2,10 @@ package util
 
 import (
 	"fmt"
-	"log"
 	"net"
 )
 
 var privateBlocks []*net.IPNet
-
-//get ip by name ,use for etcd machines discoury
-func GetIPByName(name string) []string {
-	ns, err := net.LookupIP(name)
-	if err != nil {
-		log.Printf("[DEBUG]Can't get ips for %v\n", name)
-		return nil
-	} else {
-		var ips []string
-		for _, ip := range ns {
-			ips = append(ips, ip.String())
-		}
-		return ips
-	}
-}
 
 func init() {
 	// Add each private block

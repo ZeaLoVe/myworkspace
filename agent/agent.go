@@ -35,6 +35,7 @@ const Version = "1.4.1"
 //ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from backends
 var CONFIGFILE string
 var PIDFILEPATH string
+var SHOWVERSION bool
 
 func main() {
 	flag.StringVar(&CONFIGFILE, "f", env("SDAGENT_CONFIGFILE", "sdconfig.json"), "Path of config file")
@@ -42,10 +43,16 @@ func main() {
 	flag.StringVar(&ETCDPROTOCOL, "h", env("SDAGENT_ETCDPROTOCOL", "http://"), "etcd client protocol")
 	flag.StringVar(&ETCDPORT, "p", env("SDAGENT_ETCDPORT", "2379"), "etcd client port")
 	flag.StringVar(&PIDFILEPATH, "m", "", "gen pid file ,use for monit")
-	flag.StringVar(&ETCDACCOUNT, "u", env("ETCD_ACCOUNT", "skydns"), "etcd account")
-	flag.StringVar(&ETCDPASSWORD, "w", env("ETCD_PASSWORD", "skydns"), "etcd password")
+	flag.StringVar(&ETCDACCOUNT, "u", env("ETCD_ACCOUNT", ""), "etcd account")
+	flag.StringVar(&ETCDPASSWORD, "w", env("ETCD_PASSWORD", ""), "etcd password")
 	flag.IntVar(&MODIFYINTERVAL, "t", 1, "Reload Check Interval")
+	flag.BoolVar(&SHOWVERSION, "v", false, "sdagent version")
 	flag.Parse()
+
+	if SHOWVERSION {
+		log.Println("sdagent version: ", Version)
+		return
+	}
 
 	if err := GenPidFile(PIDFILEPATH, "sdagent.pid"); err != nil {
 		log.Printf("[WARN]Gen pid file error with %v.\n", err)

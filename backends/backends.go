@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"path"
-	. "sdagent/util"
 	"strings"
 	"time"
 
@@ -21,11 +20,24 @@ var ETCDACCOUNT string
 var ETCDPASSWORD string
 
 func init() {
-	ETCDACCOUNT = "skydns"
-	ETCDPASSWORD = "skydns"
 	ETCDPROTOCOL = "http://"
 	ETCDDOMAIN = "etcd.sdp"
 	ETCDPORT = "2379"
+}
+
+//get ip by name ,use for etcd machines discoury
+func GetIPByName(name string) []string {
+	ns, err := net.LookupIP(name)
+	if err != nil {
+		log.Printf("[DEBUG]Can't get ips for %v\n", name)
+		return nil
+	} else {
+		var ips []string
+		for _, ip := range ns {
+			ips = append(ips, ip.String())
+		}
+		return ips
+	}
 }
 
 //sdagent default transport setting
@@ -67,17 +79,21 @@ func (backend *Backend) SetMachines(newMachine []string) error {
 	} else { //replace
 		tmpMachines = newMachine
 	}
-	log.Println("etcd machines set:", tmpMachines)
-	//	log.Println("etcd account:", ETCDACCOUNT, " password:", ETCDPASSWORD)
+	log.Println("etcd machines:", tmpMachines)
+
 	cfg := etcdClient.Config{
 		Endpoints: tmpMachines,
 		Transport: SDagentTransport,
 		// set timeout per request to fail fast when the target endpoint is unavailable
 		HeaderTimeoutPerRequest: time.Second,
-		// set account
-		Username: ETCDACCOUNT,
-		Password: ETCDPASSWORD,
 	}
+
+	if ETCDACCOUNT != "" {
+		log.Println("etcd with auth")
+		cfg.Username = ETCDACCOUNT
+		cfg.Password = ETCDPASSWORD
+	}
+
 	c, err := etcdClient.New(cfg)
 	if err != nil {
 		return err
