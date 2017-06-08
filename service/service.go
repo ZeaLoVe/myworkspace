@@ -6,9 +6,12 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
+	"regexp"
 	. "sdagent/backends"
 	. "sdagent/util"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -66,6 +69,12 @@ func NewService() *Service {
 }
 
 func (s *Service) SetKey(key string) {
+	if s.Name != "" {
+		s.Name = strings.ToLower(s.Name)
+	}
+	if s.Node != "" {
+		s.Node = strings.ToLower(s.Node)
+	}
 
 	if key == "" { //s.Key not set and given key is empty
 		if s.Key != "" { //s.Key already set
@@ -83,13 +92,14 @@ func (s *Service) SetKey(key string) {
 			s.Key = s.Node + "." + s.Name
 		}
 	} else { //s.Key not set and given key is not empty
-		s.Key = key
+		s.Key = strings.ToLower(key)
 	}
 }
 
 func (s *Service) SetHost(host string) {
 	if host == "" {
 		if s.Host != "" {
+			s.Host = strings.ToLower(s.Host)
 			return
 		}
 		ip, err := GetPrivateIP()
@@ -99,15 +109,9 @@ func (s *Service) SetHost(host string) {
 			s.Host = ip.String()
 		}
 	} else {
-		s.Host = host
+		s.Host = strings.ToLower(host)
 	}
 }
-
-//func (s *Service) SetMachines(newMachine []string) {
-//	if err := s.backend.SetMachines(newMachine); err != nil {
-//		log.Printf("[WARN]Set Machine Error, err:%v\n", err.Error())
-//	}
-//}
 
 func (s *Service) DefaultServiceParser() *ServiceParser {
 	var parser ServiceParser
@@ -131,12 +135,48 @@ func (s *Service) LoadConfigFile(filename string) {
 	}
 }
 
+func isDomainName(name string) bool {
+	name_words := strings.Split(name, ".")
+	if len(name_words) <= 1 {
+		return false
+	}
+	r, err := regexp.Compile("[a-z0-9][-a-z0-9]*")
+	if err != nil {
+		return true //无法获取正则表达式模板，忽略检查
+	}
+	for _, word := range name_words {
+		if word == "" {
+			return false
+		}
+		match := r.FindAllString(word, 2)
+		if len(match) != 1 {
+			return false
+		}
+		if match[0] != word {
+			return false
+		}
+	}
+	return true
+}
+
+func (s *Service) isValidService() bool {
+	if s.Host == "" {
+		return true
+	}
+	if ip := net.ParseIP(s.Host); ip == nil { //not ip
+		if isDomain := isDomainName(s.Host); !isDomain {
+			return false
+		}
+	}
+	return true //is ip or domain
+}
+
 //Service can't run job if Key,ttl not set
 func (s *Service) CanRun() bool {
 	if s.Key == "" || s.Ttl == 0 {
 		return false
 	} else {
-		return true
+		return s.isValidService()
 	}
 }
 

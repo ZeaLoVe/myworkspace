@@ -76,7 +76,7 @@ func (sda *SDAgent) Start() {
 	countFail := 0
 	for i, _ := range sda.Jobs {
 		if !sda.Jobs[i].CanRun() {
-			log.Printf("[WARN]jobID:%v miss some config, will not run.\n", sda.Jobs[i].config.JobID)
+			log.Printf("[ERR]jobID:%v config has something wrong, will not run.\n", sda.Jobs[i].config.JobID)
 			countFail++
 		} else {
 			sda.Jobs[i].SetConfig()
