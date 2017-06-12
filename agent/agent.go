@@ -30,7 +30,8 @@ func env(key, def string) string {
 //1.3.4 修复域名注册的时候存在大写字母的问题
 //1.3.5 增加health check 的默认超时时间从3秒到10秒
 //1.4.1 增加etcd账号
-const Version = "1.4.1"
+//1.4.2 增加host合法性验证，不符合域名和IP格式的输入会报错
+const Version = "1.4.2"
 
 //ETCDPORT\ETCDDOMAIN\MODIFYINTERVAL come from backends
 var CONFIGFILE string

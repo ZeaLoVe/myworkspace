@@ -140,7 +140,7 @@ func isDomainName(name string) bool {
 	if len(name_words) <= 1 {
 		return false
 	}
-	r, err := regexp.Compile("[a-z0-9][-a-z0-9]*")
+	r, err := regexp.Compile("[a-z0-9][-a-z0-9]*[a-z0-9]")
 	if err != nil {
 		return true //无法获取正则表达式模板，忽略检查
 	}
